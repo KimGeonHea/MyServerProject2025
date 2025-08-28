@@ -1,0 +1,18 @@
+# Visual Studio / .NET
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build outputs (모든 프로젝트 공통)
+**/bin/
+**/obj/
+**/out/
+**/Debug/
+**/Release/
+**/publish/
+*.log
+
+# JetBrains Rider(쓰면)
+.idea/
