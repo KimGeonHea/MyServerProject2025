@@ -25,44 +25,46 @@ namespace Google.Protobuf.Protocol {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "CgxTdHJ1Y3QucHJvdG8SCFByb3RvY29sGgpFbnVtLnByb3RvIikKCFJvb21J",
-            "bmZvEg4KBnJvb21JZBgBIAEoBRINCgVtYXBJZBgCIAEoBSKLAgoOUGxheWVy",
+            "bmZvEg4KBnJvb21JZBgBIAEoBRINCgVtYXBJZBgCIAEoBSLKAgoOUGxheWVy",
             "U3RhdEluZm8SEgoKcGxheWVyRGJJZBgBIAEoBRISCgpwbGF5ZXJOYW1lGAIg",
             "ASgJEg0KBWxldmVsGAMgASgFEgsKA2V4cBgEIAEoBRIQCgh0b3RhbEV4cBgF",
             "IAEoBRIMCgRnb2xkGAYgASgFEg8KB2RhaW1vbmQYByABKAUSDgoGcm9vbUlk",
-            "GAggASgFEg4KBmVuZXJneRgJIAEoBRIRCglzdGFnZU5hbWUYCiABKAkSGwoT",
-            "bGFzdEVuZXJneUdpdmVuVGltZRgLIAEoCRIbChNsYXN0RGFpbHlSZXdhcmRU",
-            "aW1lGAwgASgJEhcKD2RhaWx5d2Vla1Jld2FyZBgNIAEoCSJhCgpPYmplY3RJ",
-            "bmZvEhAKCG9iamVjdElkGAEgASgFEhIKCnRlbXBsYXRlSWQYAiABKAUSLQoK",
-            "b2JqZWN0VHlwZRgDIAEoDjIZLlByb3RvY29sLkVHYW1lT2JqZWN0VHlwZSIs",
-            "ChBQbGF5ZXJPYmVqY3RJbmZvEhgKEHBsYXllck9iZWpjdEluZm8YASABKAUi",
-            "YgoMUG9zaXRpb25JbmZvEgwKBHBvc1gYASABKAISDAoEcG9zWRgCIAEoAhIM",
-            "CgRwb3NaGAMgASgCEgwKBGRpclgYBCABKAISDAoEZGlyWRgFIAEoAhIMCgRk",
-            "aXJaGAYgASgCIkoKDEhlcm9TdGF0SW5mbxIQCghoZXJvRGJJZBgBIAEoBRIS",
-            "Cgp0ZW1wbGF0ZUlkGAIgASgFEhQKDGl0ZW1TbG90VHlwZRgDIAEoBSK7AQoI",
-            "SGVyb0luZm8SKAoKb2JqZWN0SW5mbxgBIAEoCzIULlByb3RvY29sLk9iamVj",
-            "dEluZm8SLQoKdXBwZXJTdGF0ZRgCIAEoDjIZLlByb3RvY29sLkVIZXJvVXBw",
-            "ZXJTdGF0ZRItCgpsb3dlclN0YXRlGAMgASgOMhkuUHJvdG9jb2wuRUhlcm9M",
-            "b3dlclN0YXRlEicKB3Bvc0luZm8YBCABKAsyFi5Qcm90b2NvbC5Qb3NpdGlv",
-            "bkluZm8iuwEKCEhlcm9Nb3ZlEigKCm9iamVjdEluZm8YASABKAsyFC5Qcm90",
-            "b2NvbC5PYmplY3RJbmZvEi0KCnVwcGVyU3RhdGUYAiABKA4yGS5Qcm90b2Nv",
-            "bC5FSGVyb1VwcGVyU3RhdGUSLQoKbG93ZXJTdGF0ZRgDIAEoDjIZLlByb3Rv",
-            "Y29sLkVIZXJvTG93ZXJTdGF0ZRInCgdwb3NJbmZvGAQgASgLMhYuUHJvdG9j",
-            "b2wuUG9zaXRpb25JbmZvIq4BCgpQbGF5ZXJJbmZvEjAKDnBsYXllclN0YXRJ",
-            "bmZvGAEgASgLMhguUHJvdG9jb2wuUGxheWVyU3RhdEluZm8SIQoFaGVyb3MY",
-            "AiADKAsyEi5Qcm90b2NvbC5IZXJvSW5mbxIhCgVpdGVtcxgDIAMoCzISLlBy",
-            "b3RvY29sLkl0ZW1JbmZvEigKDHNlbGVjdGVkSGVybxgEIAEoCzISLlByb3Rv",
-            "Y29sLkhlcm9JbmZvIpwBCghJdGVtSW5mbxIQCghpdGVtRGJJZBgBIAEoAxIS",
-            "Cgp0ZW1wbGF0ZUlkGAIgASgFEi0KDGl0ZW1TbG90VHlwZRgDIAEoDjIXLlBy",
-            "b3RvY29sLkVJdGVtU2xvdFR5cGUSDQoFY291bnQYBCABKAUSFAoMZW5jaGFu",
-            "dENvdW50GAUgASgFEhYKDnJlbWFpbmluZ1RpY2tzGAYgASgFIlwKC0NoYXRN",
-            "ZXNzYWdlEhIKCnBsYXllckRiSWQYASABKAUSEgoKcGxheWVyTmFtZRgCIAEo",
-            "CRITCgt0ZXh0TWVzc2FnZRgDIAEoCRIQCghjaGF0VGltZRgEIAEoCUIbqgIY",
-            "R29vZ2xlLlByb3RvYnVmLlByb3RvY29sYgZwcm90bzM="));
+            "GAggASgFEg4KBmVuZXJneRgJIAEoBRIZChFJbnZlbnRvcnlDYXBhY2l0eRgK",
+            "IAEoBRIOCgZSYXRpbmcYCyABKAUSEgoKdGltZVpvbmVJZBgMIAEoCRIRCglz",
+            "dGFnZU5hbWUYDSABKAkSGwoTbGFzdEVuZXJneUdpdmVuVGltZRgOIAEoCRIb",
+            "ChNsYXN0RGFpbHlSZXdhcmRUaW1lGA8gASgJEhcKD2RhaWx5d2Vla1Jld2Fy",
+            "ZBgQIAEoCSJhCgpPYmplY3RJbmZvEhAKCG9iamVjdElkGAEgASgFEhIKCnRl",
+            "bXBsYXRlSWQYAiABKAUSLQoKb2JqZWN0VHlwZRgDIAEoDjIZLlByb3RvY29s",
+            "LkVHYW1lT2JqZWN0VHlwZSIsChBQbGF5ZXJPYmVqY3RJbmZvEhgKEHBsYXll",
+            "ck9iZWpjdEluZm8YASABKAUiYgoMUG9zaXRpb25JbmZvEgwKBHBvc1gYASAB",
+            "KAISDAoEcG9zWRgCIAEoAhIMCgRwb3NaGAMgASgCEgwKBGRpclgYBCABKAIS",
+            "DAoEZGlyWRgFIAEoAhIMCgRkaXJaGAYgASgCIkoKDEhlcm9TdGF0SW5mbxIQ",
+            "CghoZXJvRGJJZBgBIAEoBRISCgp0ZW1wbGF0ZUlkGAIgASgFEhQKDGl0ZW1T",
+            "bG90VHlwZRgDIAEoBSK7AQoISGVyb0luZm8SKAoKb2JqZWN0SW5mbxgBIAEo",
+            "CzIULlByb3RvY29sLk9iamVjdEluZm8SLQoKdXBwZXJTdGF0ZRgCIAEoDjIZ",
+            "LlByb3RvY29sLkVIZXJvVXBwZXJTdGF0ZRItCgpsb3dlclN0YXRlGAMgASgO",
+            "MhkuUHJvdG9jb2wuRUhlcm9Mb3dlclN0YXRlEicKB3Bvc0luZm8YBCABKAsy",
+            "Fi5Qcm90b2NvbC5Qb3NpdGlvbkluZm8iuwEKCEhlcm9Nb3ZlEigKCm9iamVj",
+            "dEluZm8YASABKAsyFC5Qcm90b2NvbC5PYmplY3RJbmZvEi0KCnVwcGVyU3Rh",
+            "dGUYAiABKA4yGS5Qcm90b2NvbC5FSGVyb1VwcGVyU3RhdGUSLQoKbG93ZXJT",
+            "dGF0ZRgDIAEoDjIZLlByb3RvY29sLkVIZXJvTG93ZXJTdGF0ZRInCgdwb3NJ",
+            "bmZvGAQgASgLMhYuUHJvdG9jb2wuUG9zaXRpb25JbmZvIq4BCgpQbGF5ZXJJ",
+            "bmZvEjAKDnBsYXllclN0YXRJbmZvGAEgASgLMhguUHJvdG9jb2wuUGxheWVy",
+            "U3RhdEluZm8SIQoFaGVyb3MYAiADKAsyEi5Qcm90b2NvbC5IZXJvSW5mbxIh",
+            "CgVpdGVtcxgDIAMoCzISLlByb3RvY29sLkl0ZW1JbmZvEigKDHNlbGVjdGVk",
+            "SGVybxgEIAEoCzISLlByb3RvY29sLkhlcm9JbmZvIpwBCghJdGVtSW5mbxIQ",
+            "CghpdGVtRGJJZBgBIAEoAxISCgp0ZW1wbGF0ZUlkGAIgASgFEi0KDGl0ZW1T",
+            "bG90VHlwZRgDIAEoDjIXLlByb3RvY29sLkVJdGVtU2xvdFR5cGUSDQoFY291",
+            "bnQYBCABKAUSFAoMZW5jaGFudENvdW50GAUgASgFEhYKDnJlbWFpbmluZ1Rp",
+            "Y2tzGAYgASgFIlwKC0NoYXRNZXNzYWdlEhIKCnBsYXllckRiSWQYASABKAUS",
+            "EgoKcGxheWVyTmFtZRgCIAEoCRITCgt0ZXh0TWVzc2FnZRgDIAEoCRIQCghj",
+            "aGF0VGltZRgEIAEoCUIbqgIYR29vZ2xlLlByb3RvYnVmLlByb3RvY29sYgZw",
+            "cm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.Protocol.EnumReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Protocol.RoomInfo), global::Google.Protobuf.Protocol.RoomInfo.Parser, new[]{ "RoomId", "MapId" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Protocol.PlayerStatInfo), global::Google.Protobuf.Protocol.PlayerStatInfo.Parser, new[]{ "PlayerDbId", "PlayerName", "Level", "Exp", "TotalExp", "Gold", "Daimond", "RoomId", "Energy", "StageName", "LastEnergyGivenTime", "LastDailyRewardTime", "DailyweekReward" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Protocol.PlayerStatInfo), global::Google.Protobuf.Protocol.PlayerStatInfo.Parser, new[]{ "PlayerDbId", "PlayerName", "Level", "Exp", "TotalExp", "Gold", "Daimond", "RoomId", "Energy", "InventoryCapacity", "Rating", "TimeZoneId", "StageName", "LastEnergyGivenTime", "LastDailyRewardTime", "DailyweekReward" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Protocol.ObjectInfo), global::Google.Protobuf.Protocol.ObjectInfo.Parser, new[]{ "ObjectId", "TemplateId", "ObjectType" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Protocol.PlayerObejctInfo), global::Google.Protobuf.Protocol.PlayerObejctInfo.Parser, new[]{ "PlayerObejctInfo_" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Protocol.PositionInfo), global::Google.Protobuf.Protocol.PositionInfo.Parser, new[]{ "PosX", "PosY", "PosZ", "DirX", "DirY", "DirZ" }, null, null, null, null),
@@ -269,6 +271,9 @@ namespace Google.Protobuf.Protocol {
       daimond_ = other.daimond_;
       roomId_ = other.roomId_;
       energy_ = other.energy_;
+      inventoryCapacity_ = other.inventoryCapacity_;
+      rating_ = other.rating_;
+      timeZoneId_ = other.timeZoneId_;
       stageName_ = other.stageName_;
       lastEnergyGivenTime_ = other.lastEnergyGivenTime_;
       lastDailyRewardTime_ = other.lastDailyRewardTime_;
@@ -380,8 +385,41 @@ namespace Google.Protobuf.Protocol {
       }
     }
 
+    /// <summary>Field number for the "InventoryCapacity" field.</summary>
+    public const int InventoryCapacityFieldNumber = 10;
+    private int inventoryCapacity_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int InventoryCapacity {
+      get { return inventoryCapacity_; }
+      set {
+        inventoryCapacity_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "Rating" field.</summary>
+    public const int RatingFieldNumber = 11;
+    private int rating_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Rating {
+      get { return rating_; }
+      set {
+        rating_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "timeZoneId" field.</summary>
+    public const int TimeZoneIdFieldNumber = 12;
+    private string timeZoneId_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string TimeZoneId {
+      get { return timeZoneId_; }
+      set {
+        timeZoneId_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
     /// <summary>Field number for the "stageName" field.</summary>
-    public const int StageNameFieldNumber = 10;
+    public const int StageNameFieldNumber = 13;
     private string stageName_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string StageName {
@@ -392,7 +430,7 @@ namespace Google.Protobuf.Protocol {
     }
 
     /// <summary>Field number for the "lastEnergyGivenTime" field.</summary>
-    public const int LastEnergyGivenTimeFieldNumber = 11;
+    public const int LastEnergyGivenTimeFieldNumber = 14;
     private string lastEnergyGivenTime_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string LastEnergyGivenTime {
@@ -403,7 +441,7 @@ namespace Google.Protobuf.Protocol {
     }
 
     /// <summary>Field number for the "lastDailyRewardTime" field.</summary>
-    public const int LastDailyRewardTimeFieldNumber = 12;
+    public const int LastDailyRewardTimeFieldNumber = 15;
     private string lastDailyRewardTime_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string LastDailyRewardTime {
@@ -414,7 +452,7 @@ namespace Google.Protobuf.Protocol {
     }
 
     /// <summary>Field number for the "dailyweekReward" field.</summary>
-    public const int DailyweekRewardFieldNumber = 13;
+    public const int DailyweekRewardFieldNumber = 16;
     private string dailyweekReward_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string DailyweekReward {
@@ -446,6 +484,9 @@ namespace Google.Protobuf.Protocol {
       if (Daimond != other.Daimond) return false;
       if (RoomId != other.RoomId) return false;
       if (Energy != other.Energy) return false;
+      if (InventoryCapacity != other.InventoryCapacity) return false;
+      if (Rating != other.Rating) return false;
+      if (TimeZoneId != other.TimeZoneId) return false;
       if (StageName != other.StageName) return false;
       if (LastEnergyGivenTime != other.LastEnergyGivenTime) return false;
       if (LastDailyRewardTime != other.LastDailyRewardTime) return false;
@@ -465,6 +506,9 @@ namespace Google.Protobuf.Protocol {
       if (Daimond != 0) hash ^= Daimond.GetHashCode();
       if (RoomId != 0) hash ^= RoomId.GetHashCode();
       if (Energy != 0) hash ^= Energy.GetHashCode();
+      if (InventoryCapacity != 0) hash ^= InventoryCapacity.GetHashCode();
+      if (Rating != 0) hash ^= Rating.GetHashCode();
+      if (TimeZoneId.Length != 0) hash ^= TimeZoneId.GetHashCode();
       if (StageName.Length != 0) hash ^= StageName.GetHashCode();
       if (LastEnergyGivenTime.Length != 0) hash ^= LastEnergyGivenTime.GetHashCode();
       if (LastDailyRewardTime.Length != 0) hash ^= LastDailyRewardTime.GetHashCode();
@@ -518,20 +562,32 @@ namespace Google.Protobuf.Protocol {
         output.WriteRawTag(72);
         output.WriteInt32(Energy);
       }
+      if (InventoryCapacity != 0) {
+        output.WriteRawTag(80);
+        output.WriteInt32(InventoryCapacity);
+      }
+      if (Rating != 0) {
+        output.WriteRawTag(88);
+        output.WriteInt32(Rating);
+      }
+      if (TimeZoneId.Length != 0) {
+        output.WriteRawTag(98);
+        output.WriteString(TimeZoneId);
+      }
       if (StageName.Length != 0) {
-        output.WriteRawTag(82);
+        output.WriteRawTag(106);
         output.WriteString(StageName);
       }
       if (LastEnergyGivenTime.Length != 0) {
-        output.WriteRawTag(90);
+        output.WriteRawTag(114);
         output.WriteString(LastEnergyGivenTime);
       }
       if (LastDailyRewardTime.Length != 0) {
-        output.WriteRawTag(98);
+        output.WriteRawTag(122);
         output.WriteString(LastDailyRewardTime);
       }
       if (DailyweekReward.Length != 0) {
-        output.WriteRawTag(106);
+        output.WriteRawTag(130, 1);
         output.WriteString(DailyweekReward);
       }
       if (_unknownFields != null) {
@@ -569,6 +625,15 @@ namespace Google.Protobuf.Protocol {
       if (Energy != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(Energy);
       }
+      if (InventoryCapacity != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(InventoryCapacity);
+      }
+      if (Rating != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Rating);
+      }
+      if (TimeZoneId.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(TimeZoneId);
+      }
       if (StageName.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(StageName);
       }
@@ -579,7 +644,7 @@ namespace Google.Protobuf.Protocol {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(LastDailyRewardTime);
       }
       if (DailyweekReward.Length != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeStringSize(DailyweekReward);
+        size += 2 + pb::CodedOutputStream.ComputeStringSize(DailyweekReward);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -618,6 +683,15 @@ namespace Google.Protobuf.Protocol {
       }
       if (other.Energy != 0) {
         Energy = other.Energy;
+      }
+      if (other.InventoryCapacity != 0) {
+        InventoryCapacity = other.InventoryCapacity;
+      }
+      if (other.Rating != 0) {
+        Rating = other.Rating;
+      }
+      if (other.TimeZoneId.Length != 0) {
+        TimeZoneId = other.TimeZoneId;
       }
       if (other.StageName.Length != 0) {
         StageName = other.StageName;
@@ -678,19 +752,31 @@ namespace Google.Protobuf.Protocol {
             Energy = input.ReadInt32();
             break;
           }
-          case 82: {
-            StageName = input.ReadString();
+          case 80: {
+            InventoryCapacity = input.ReadInt32();
             break;
           }
-          case 90: {
-            LastEnergyGivenTime = input.ReadString();
+          case 88: {
+            Rating = input.ReadInt32();
             break;
           }
           case 98: {
-            LastDailyRewardTime = input.ReadString();
+            TimeZoneId = input.ReadString();
             break;
           }
           case 106: {
+            StageName = input.ReadString();
+            break;
+          }
+          case 114: {
+            LastEnergyGivenTime = input.ReadString();
+            break;
+          }
+          case 122: {
+            LastDailyRewardTime = input.ReadString();
+            break;
+          }
+          case 130: {
             DailyweekReward = input.ReadString();
             break;
           }

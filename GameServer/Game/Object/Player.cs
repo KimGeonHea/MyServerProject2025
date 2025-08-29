@@ -39,7 +39,12 @@ namespace GameServer
     public Hero selectHero { get; set; }  
 
     public DateTime LastDailyRewardTime;
-    public int WeeklyRewardFlags { get; set; } = 0; 
+    public int WeeklyRewardFlags { get; set; } = 0;
+
+    public DayOfWeek WeekStartDay;
+
+    public byte ResetHourLocal = 9;
+    
 
     public static Player MakePlayer(ClientSession session , PlayerDb playerDb)
     {
@@ -59,6 +64,13 @@ namespace GameServer
       playerStatInfo.Gold = playerDb.Gold;
       playerStatInfo.Daimond = playerDb.Diamond;
       playerStatInfo.PlayerName = playerDb.PlayerName;
+      playerStatInfo.InventoryCapacity = playerDb.InventoryCapacity;
+      playerStatInfo.Energy = playerDb.Energy;
+      playerStatInfo.StageName = playerDb.StageName;
+      
+      playerStatInfo.Rating = playerDb.Rating;
+      playerStatInfo.TimeZoneId = playerDb.TimeZoneId;  
+      ///playerStatInfo.ResetHourLocal = playerDb.ResetHourLocal;
 
       inventory = new Inventory(this);
       invenHero = new InvenHero(this);
@@ -66,7 +78,7 @@ namespace GameServer
       invenHero.Init(playerDb);
       inventory.Init(playerDb);
 
-
+      WeekStartDay = playerDb.WeekStartDay;
       LastDailyRewardTime = playerDb.LastDailyRewardTime;
       WeeklyRewardFlags = playerDb.WeeklyRewardFlags;
 

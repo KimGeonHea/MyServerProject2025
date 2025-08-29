@@ -387,7 +387,7 @@ class PacketHandler
     LobbyRoom room = player.Room as LobbyRoom;
     if (room == null)
       return;
-    
+
     room.Push(room.CheckDailyReward, player);
   }
   public static void C_DailyRewardOpenHandler(PacketSession session, IMessage packet)

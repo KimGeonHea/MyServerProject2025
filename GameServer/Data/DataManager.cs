@@ -28,11 +28,12 @@ namespace Server.Data
       heroSkillDict = LoadJson<HeroSkillLoader, int, HeroSkillData>("HeroSkillData").MakeDict();
       //LoadMap();
       LoadMapGrid();
+
+
     }
 
 
-
-		static Loader LoadJson<Loader, Key, Value>(string path) where Loader : ILoader<Key, Value>
+    static Loader LoadJson<Loader, Key, Value>(string path) where Loader : ILoader<Key, Value>
 		{
 			string text = File.ReadAllText($"{ConfigManager.Config.dataPath}/JsonData/{path}.json");
       return Newtonsoft.Json.JsonConvert.DeserializeObject<Loader>(text);

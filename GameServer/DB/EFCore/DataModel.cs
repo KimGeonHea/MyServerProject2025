@@ -31,6 +31,9 @@ namespace Server.Game
     public int Diamond { get; set; }
     public int RoomId { get; set; } // MMO에 만필요
     public int Energy { get; set; }
+    public int Rating { get; set; }
+    public string TimeZoneId { get; set; } = "Asia/Seoul"; // 유저 타임존(IANA)
+    public DayOfWeek WeekStartDay { get; set; } = DayOfWeek.Monday; // 주 시작 요일
 
     public int InventoryCapacity { get; set; }
     public string StageName { get; set; }

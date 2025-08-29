@@ -1,4 +1,5 @@
-﻿using Google.Protobuf.Protocol;
+﻿using GameServer.Utils;
+using Google.Protobuf.Protocol;
 using Server;
 using Server.Data;
 using Server.Game;
@@ -66,145 +67,214 @@ namespace GameServer.Game.Room
       }
     }
 
-    public void CheckDailyReward(
-        Player player,
-        int resetHourLocal = 9,
-        bool weekStartsMonday = true,
-        string timeZoneId = "Asia/Seoul" // 계정별로 저장해두면 더 좋음
-    )
+    public void CheckDailyReward(Player player)
     {
-      // 1) 타임존 로딩
-      TimeZoneInfo tz;
-      try { tz = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId); }
-      catch { tz = TimeZoneInfo.Local; }
-
-      // 2) 현재/마지막 수령시각을 UTC 기준으로 정규화
-      DateTime nowUtc = DateTime.UtcNow;
-
-      DateTime lastUtc = player.LastDailyRewardTime;
-      if (lastUtc != default)
-      {
-        if (lastUtc.Kind == DateTimeKind.Local) lastUtc = lastUtc.ToUniversalTime();
-        else if (lastUtc.Kind == DateTimeKind.Unspecified) lastUtc = DateTime.SpecifyKind(lastUtc, DateTimeKind.Utc);
-      }
-
-      // 3) 로컬 변환 + 리셋 규칙 적용(리셋 전은 어제)
-      DateTime nowLocal = TimeZoneInfo.ConvertTimeFromUtc(nowUtc, tz);
-      DateTime todayUI = EffectiveLocalDate(nowLocal, resetHourLocal);
-
-      DateTime lastLocal = (lastUtc == default) ? DateTime.MinValue
-                                                : TimeZoneInfo.ConvertTimeFromUtc(lastUtc, tz);
-      DateTime lastUI = (lastLocal == DateTime.MinValue) ? DateTime.MinValue
-                                                            : EffectiveLocalDate(lastLocal, resetHourLocal);
-
-      // 4) 오늘 이미 수령했으면 종료
-      if (todayUI == lastUI)
-      {
-        Console.WriteLine("오늘 이미 보상 받음");
+      if (player == null) 
         return;
-      }
 
-      // 5) 주 경계 체크(지난 주였다면 플래그 초기화)
-      var (weekStart, todayIndex) = GetWeekStartAndIndex(todayUI, weekStartsMonday);
-      if (lastUI < weekStart)
+      // 유저 설정(없으면 기본)
+      string tzId = (!string.IsNullOrWhiteSpace(player.playerStatInfo?.TimeZoneId) ? player.playerStatInfo.TimeZoneId : "Asia/Seoul");
+      byte resetHour = (byte)Math.Clamp((int)player.ResetHourLocal, 0, 23); // 전역 9시면 9 고정
+      DayOfWeek weekStart =
+          (player.WeekStartDay >= DayOfWeek.Sunday && player.WeekStartDay <= DayOfWeek.Saturday)
+          ? player.WeekStartDay : DayOfWeek.Monday;
+
+      // 지금/마지막 수령 UTC
+      DateTime nowUtc = TzUtil.AsUtc(DateTime.UtcNow);
+      DateTime lastUtc = TzUtil.AsUtc(player.LastDailyRewardTime);
+
+      // 오늘 리셋 창(현지 resetHour ~ 다음 resetHour)
+      (DateTime startUtc, DateTime endUtc) = TzUtil.GetDailyWindowUtc(tzId, nowUtc, resetHour);
+
+      // 오늘 이미 받았으면 종료(멱등)
+      if (lastUtc >= startUtc && lastUtc < endUtc)
+        return;
+
+      // 주간 경계: 지난 주였다면 진행도 초기화
+      DateTime weekStartNowUtc = TzUtil.GetWeekStartUtc(tzId, weekStart, startUtc, resetHour);
+      if (lastUtc != DateTime.MinValue)
+      {
+        var (lastStartUtc, _) = TzUtil.GetDailyWindowUtc(tzId, lastUtc, resetHour);
+        DateTime weekStartLastUtc = TzUtil.GetWeekStartUtc(tzId, weekStart, lastStartUtc, resetHour);
+        if (weekStartLastUtc < weekStartNowUtc)
+          player.WeeklyRewardFlags = 0;
+      }
+      else
+      {
         player.WeeklyRewardFlags = 0;
+      }
 
-      // 6) 오늘 칸 비트 계산(요일 기반)
-      int todayBit = 1 << todayIndex;
+      // 이번 주 진행도 = 세워진 비트 개수 (0~7)
+      int countThisWeek = CountSetBits(player.WeeklyRewardFlags);
+      if (countThisWeek >= 7)
+        return; // 이번 주 이미 7회 완료
 
-      // 동시성/중복 방지: 이미 세팅되어 있으면 종료
-      if ((player.WeeklyRewardFlags & todayBit) != 0)
-        return;
+      // 순차 방식: 다음 비트를 세운다 (요일과 무관)
+      int nextBit = 1 << countThisWeek;
+      player.WeeklyRewardFlags |= nextBit;
 
-      // 7) 오늘 비트 세팅 + 보상
-      player.WeeklyRewardFlags |= todayBit;
-      player.LastDailyRewardTime = nowUtc;
-
-      // 보상 단계: 요일 고정형이면 todayIndex+1, 연속 출석형이면 CountSetBits(...) + 1 사용
-      int rewardDay = todayIndex + 1; // 월=1, … 일=7 (weekStartsMonday=true 기준)
+      // 타임스탬프/보상
+      player.LastDailyRewardTime = nowUtc;   // 항상 UTC 저장
+      int rewardDay = countThisWeek + 1;     // 1~7 보상 단계
       RewardDaily(player, rewardDay);
 
-      // 8) DB 반영 (부분 업데이트)
+      // DB 부분 업데이트
       DBManager.Push(player.PlayerDbId, () =>
       {
-        using (var db = new GameDbContext())
+        using var db = new GameDbContext();
+        var row = new PlayerDb
         {
-          var playerDb = new PlayerDb
-          {
-            PlayerDbId = player.PlayerDbId,
-            LastDailyRewardTime = player.LastDailyRewardTime, // UTC 저장
-            WeeklyRewardFlags = player.WeeklyRewardFlags
-          };
-
-          db.playerDbs.Attach(playerDb);
-          db.Entry(playerDb).Property(p => p.LastDailyRewardTime).IsModified = true;
-          db.Entry(playerDb).Property(p => p.WeeklyRewardFlags).IsModified = true;
-          db.SaveChangesEx();
-        }
+          PlayerDbId = player.PlayerDbId,
+          LastDailyRewardTime = player.LastDailyRewardTime,
+          WeeklyRewardFlags = player.WeeklyRewardFlags
+        };
+        db.playerDbs.Attach(row);
+        db.Entry(row).Property(p => p.LastDailyRewardTime).IsModified = true;
+        db.Entry(row).Property(p => p.WeeklyRewardFlags).IsModified = true;
+        db.SaveChangesEx();
       });
     }
+
+    // === 드롭인 교체: TzUtil 기반(현지 타임존 + 리셋 09:00) 일일/주간 처리 ===
+    //public void CheckDailyReward(Player player, int resetHourLocal = 9,bool weekStartsMonday = true,string timeZoneId = "Asia/Seoul")
+    //{
+    //  if (player == null) 
+    //    return;
+    //
+    //  // 1) Player 저장값 우선, 없으면 인자 기본값 사용
+    //  byte resetHour = (player.ResetHourLocal >= 0 && player.ResetHourLocal <= 23)
+    //                    ? player.ResetHourLocal
+    //                    : (byte)Math.Clamp(resetHourLocal, 0, 23);
+    //
+    //  DayOfWeek weekStart = (player.WeekStartDay >= DayOfWeek.Sunday && player.WeekStartDay <= DayOfWeek.Saturday)
+    //                          ? player.WeekStartDay
+    //                          : (weekStartsMonday ? DayOfWeek.Monday : DayOfWeek.Sunday);
+    //
+    //  // Player.TimeZoneId 또는 player.playerStatInfo.TimeZoneId 둘 중 있는 걸 사용
+    //  string tzId =
+    //      (!string.IsNullOrWhiteSpace(player.playerStatInfo?.TimeZoneId) ? player.playerStatInfo.TimeZoneId : timeZoneId);
+    //
+    //  // 2) 지금/마지막 수령 시각 UTC 정규화
+    //  DateTime nowUtc = TzUtil.AsUtc(DateTime.UtcNow);
+    //  DateTime lastUtc = TzUtil.AsUtc(player.LastDailyRewardTime);
+    //
+    //  // 3) 오늘 리셋 윈도우(현지 resetHour ~ 다음날 resetHour) 계산
+    //  var (startUtc, endUtc) = TzUtil.GetDailyWindowUtc(tzId, nowUtc, resetHour);
+    //
+    //  // 4) 오늘 이미 받았는가?
+    //  bool claimedToday = (lastUtc >= startUtc && lastUtc < endUtc);
+    //  if (claimedToday) return;
+    //
+    //  // 5) 주간 경계 체크(지난 주였다면 플래그 초기화)
+    //  DateTime weekStartNowUtc = TzUtil.GetWeekStartUtc(tzId, weekStart, startUtc, resetHour);
+    //
+    //  if (lastUtc == default)
+    //  {
+    //    player.WeeklyRewardFlags = 0;
+    //  }
+    //  else
+    //  {
+    //    var (lastStartUtc, _) = TzUtil.GetDailyWindowUtc(tzId, lastUtc, resetHour);
+    //    DateTime weekStartLastUtc = TzUtil.GetWeekStartUtc(tzId, weekStart, lastStartUtc, resetHour);
+    //    if (weekStartLastUtc < weekStartNowUtc)
+    //      player.WeeklyRewardFlags = 0;
+    //  }
+    //
+    //  // 6) 오늘이 이번 주의 몇 번째 날(0~6)? 0=주 시작 요일
+    //  int todayIndex = (int)Math.Floor((startUtc - weekStartNowUtc).TotalDays);
+    //  if (todayIndex < 0) todayIndex = 0;
+    //  if (todayIndex > 6) todayIndex = 6;
+    //
+    //  int todayBit = 1 << todayIndex;
+    //  if ((player.WeeklyRewardFlags & todayBit) != 0)
+    //    return; // 멱등
+    //
+    //  // 7) 비트 세팅 + 보상 + 타임스탬프 저장(UTC)
+    //  player.WeeklyRewardFlags |= todayBit;
+    //  player.LastDailyRewardTime = nowUtc;
+    //
+    //  // 요일 고정형 보상: 1~7 (주 시작 요일을 1일차로 간주)
+    //  int rewardDay = todayIndex + 1;
+    //  RewardDaily(player, rewardDay);
+    //
+    //  // 8) DB 부분 업데이트
+    //  DBManager.Push(player.PlayerDbId, () =>
+    //  {
+    //    using var db = new GameDbContext();
+    //    var playerDb = new PlayerDb
+    //    {
+    //      PlayerDbId = player.PlayerDbId,
+    //      LastDailyRewardTime = player.LastDailyRewardTime, // UTC
+    //      WeeklyRewardFlags = player.WeeklyRewardFlags
+    //    };
+    //    db.playerDbs.Attach(playerDb);
+    //    db.Entry(playerDb).Property(p => p.LastDailyRewardTime).IsModified = true;
+    //    db.Entry(playerDb).Property(p => p.WeeklyRewardFlags).IsModified = true;
+    //    db.SaveChangesEx();
+    //  });
+    //}
 
     /// <summary>
     /// TODO UTC로 사용할껀지 한국 시간 및 다른 시간 적용 시킬껀지
     /// </summary>
     /// <param name="player"></param>
-    public void CheckDailyReward(Player player)
-    {
-      DateTime now = DateTime.UtcNow.Date;
-      DateTime last = player.LastDailyRewardTime.Date;
-      // 오늘 이미 보상 받았으면 리턴
-      if (last == now)
-      {
-        Console.WriteLine("오늘 이미 보상 받음");
-        return;
-      }
-      // 이번 주 시작일 (월요일 기준)
-      DateTime startOfWeek = now.AddDays(-((int)now.DayOfWeek + 6) % 7);
-
-      // 월요일이고, 마지막 접속이 지난 주라면 플래그 초기화
-      bool isMonday = ((int)now.DayOfWeek + 6) % 7 == 0;
-      if (isMonday && last < startOfWeek)
-      {
-        player.WeeklyRewardFlags = 0;
-      }
-
-      // 이번 주 받은 일수 계산
-      int rewardCountThisWeek = CountSetBits(player.WeeklyRewardFlags);
-
-      if (rewardCountThisWeek >= 7)
-      {
-        Console.WriteLine("이번 주 보상 완료");
-        return;
-      }
-      player.WeeklyRewardFlags |= (1 << rewardCountThisWeek);
-      // 보상 시간 업데이트
-      player.LastDailyRewardTime = now;
-      // 보상 지급 (1일차 = index 0이므로 +1)
-      RewardDaily(player, rewardCountThisWeek + 1);
-
-      // 해당 일수 비트 세팅
-    
-
-      // DB 반영 데일리 반영
-      DBManager.Push(player.PlayerDbId, () =>
-      {
-        using (GameDbContext db = new GameDbContext())
-        {
-          var playerDb = new PlayerDb()
-          {
-            PlayerDbId = player.PlayerDbId,
-            LastDailyRewardTime = now,
-            WeeklyRewardFlags = player.WeeklyRewardFlags
-          };
-
-          db.playerDbs.Attach(playerDb);
-          db.Entry(playerDb).Property(p => p.LastDailyRewardTime).IsModified = true;
-          db.Entry(playerDb).Property(p => p.WeeklyRewardFlags).IsModified = true;
-
-          db.SaveChangesEx();
-        }
-      });
-    }
+    //public void CheckDailyReward(Player player)
+    //{
+    //  DateTime now = DateTime.UtcNow.Date;
+    //  DateTime last = player.LastDailyRewardTime.Date;
+    //  // 오늘 이미 보상 받았으면 리턴
+    //  if (last == now)
+    //  {
+    //    Console.WriteLine("오늘 이미 보상 받음");
+    //    return;
+    //  }
+    //  // 이번 주 시작일 (월요일 기준)
+    //  DateTime startOfWeek = now.AddDays(-((int)now.DayOfWeek + 6) % 7);
+    //
+    //  // 월요일이고, 마지막 접속이 지난 주라면 플래그 초기화
+    //  bool isMonday = ((int)now.DayOfWeek + 6) % 7 == 0;
+    //  if (isMonday && last < startOfWeek)
+    //  {
+    //    player.WeeklyRewardFlags = 0;
+    //  }
+    //
+    //  // 이번 주 받은 일수 계산
+    //  int rewardCountThisWeek = CountSetBits(player.WeeklyRewardFlags);
+    //
+    //  if (rewardCountThisWeek >= 7)
+    //  {
+    //    Console.WriteLine("이번 주 보상 완료");
+    //    return;
+    //  }
+    //  player.WeeklyRewardFlags |= (1 << rewardCountThisWeek);
+    //  // 보상 시간 업데이트
+    //  player.LastDailyRewardTime = now;
+    //  // 보상 지급 (1일차 = index 0이므로 +1)
+    //  RewardDaily(player, rewardCountThisWeek + 1);
+    //
+    //  // 해당 일수 비트 세팅
+    //
+    //
+    //  // DB 반영 데일리 반영
+    //  DBManager.Push(player.PlayerDbId, () =>
+    //  {
+    //    using (GameDbContext db = new GameDbContext())
+    //    {
+    //      var playerDb = new PlayerDb()
+    //      {
+    //        PlayerDbId = player.PlayerDbId,
+    //        LastDailyRewardTime = now,
+    //        WeeklyRewardFlags = player.WeeklyRewardFlags
+    //      };
+    //
+    //      db.playerDbs.Attach(playerDb);
+    //      db.Entry(playerDb).Property(p => p.LastDailyRewardTime).IsModified = true;
+    //      db.Entry(playerDb).Property(p => p.WeeklyRewardFlags).IsModified = true;
+    //
+    //      db.SaveChangesEx();
+    //    }
+    //  });
+    //}
 
     private void RewardDaily(Player player, int day)
     {

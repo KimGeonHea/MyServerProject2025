@@ -25,8 +25,8 @@ namespace Server.Game
   public class Inventory
   {
     //슬롯 수//
-    const int DEFAULT_SLOT_COUNT = 50;
-    public Inventory(Player owner)
+    public int DEFAULT_SLOT_COUNT = 50;
+    public Inventory(Player owner )
     {
       Owner = owner;
     }

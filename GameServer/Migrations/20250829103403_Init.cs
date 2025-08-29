@@ -29,6 +29,10 @@ namespace GameServer.Migrations
                     Diamond = table.Column<int>(type: "int", nullable: false),
                     RoomId = table.Column<int>(type: "int", nullable: false),
                     Energy = table.Column<int>(type: "int", nullable: false),
+                    Rating = table.Column<int>(type: "int", nullable: false),
+                    TimeZoneId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    WeekStartDay = table.Column<int>(type: "int", nullable: false),
+                    InventoryCapacity = table.Column<int>(type: "int", nullable: false),
                     StageName = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>

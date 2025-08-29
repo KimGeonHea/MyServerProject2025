@@ -12,7 +12,7 @@ using Server.Game;
 namespace GameServer.Migrations
 {
     [DbContext(typeof(GameDbContext))]
-    [Migration("20250823051057_Init")]
+    [Migration("20250829103403_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -114,6 +114,9 @@ namespace GameServer.Migrations
                     b.Property<int>("Gold")
                         .HasColumnType("int");
 
+                    b.Property<int>("InventoryCapacity")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("LastDailyRewardTime")
                         .HasColumnType("datetime2");
 
@@ -128,13 +131,22 @@ namespace GameServer.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<int>("Rating")
+                        .HasColumnType("int");
+
                     b.Property<int>("RoomId")
                         .HasColumnType("int");
 
                     b.Property<string>("StageName")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("TimeZoneId")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("TotalExp")
+                        .HasColumnType("int");
+
+                    b.Property<int>("WeekStartDay")
                         .HasColumnType("int");
 
                     b.Property<int>("WeeklyRewardFlags")
