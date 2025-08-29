@@ -69,24 +69,45 @@ namespace GameServer.Game.Room
       baseObjects.Add(baseObject.ObjectID, baseObject);
     }
 
-    // 클라 통지만(실제 제거는 Remove에서)
-    public virtual void LeaveGame(Player player)
-    {
-      if (player == null)
-        return;
 
-      player.Session?.Send(new S_LeaveGame());
-    }
-
-    // 실제 오브젝트 제거(+링크 해제)
+    // 실제 오브젝트 제거(+링크 해제) — 공통 마무리
     public virtual void Despawn(BaseObject obj)
     {
       if (obj == null)
         return;
 
+      // 공통 컨테이너에서 제거
       if (baseObjects.Remove(obj.ObjectID))
         obj.Room = null;
+
     }
+
+    // 최소 프로토콜 헬퍼 2개 (본인 통지 / 모두 제거)
+    protected void NotifyLeave(Player me, ELeaveReason reason, bool goLobby = true)
+    {
+      if (me?.Session == null) return;
+
+      var pkt = new S_LeaveGame
+      {
+        RoomID = GameRoomId,
+        LeaveReason = reason,
+        GoLobby = goLobby
+      };
+      me.Session.Send(pkt);
+    }
+
+
+
+    // (호환용) 클라 통지만 — 실제 제거는 Remove에서
+    // 기본값: 자발적 퇴장으로 가정
+    public virtual void LeaveGame(Player player)
+    {
+      if (player == null) 
+        return;
+      NotifyLeave(player, ELeaveReason.Voluntary, goLobby: true);
+    }
+
+
 
     // 실제 플레이어 제거(+링크 해제) — TryGetValue로 안전 처리
     public virtual void Remove(int objectId)
@@ -103,6 +124,7 @@ namespace GameServer.Game.Room
       player.Room = null;
       players.Remove(objectId);
     }
+
 
     public virtual void Broadcast(IMessage packet)
     {
@@ -170,96 +192,5 @@ namespace GameServer.Game.Room
         Push(job);
     }
   }
-
-  //public int GameRoomId { get; set; }
-  //public int MapTemplateId { get; set; }
-  //public RoomScheduler Scheduler { get; set; }
-  //
-  //
-  //public Dictionary<int, Player> players = new Dictionary<int, Player>();
-  //public Dictionary<int, BaseObject> baseObjects = new Dictionary<int, BaseObject>();
-  //
-  ////public Dictionary<int, Map> monsters = new Dictionary<int, Map>();
-  //
-  //
-  //protected int playerCount = 0; //플레이오브젝트 Id관리용
-  //protected int objectCount = 0; //오브젝트 Id관리용
-  //public virtual void Update(float deltaTime)
-  //{
-  //  Flush();
-  //}
-  //public void Init(int mapTemplateId)
-  //{
-  //  this.MapTemplateId = mapTemplateId;
-  //}
-  //
-  //public virtual void EnterGame(Player player)
-  //{
-  //  if (player == null)
-  //    return;
-  //  player.ObjectID = playerCount;
-  //  if (players.ContainsKey(player.ObjectID))
-  //    return;
-  //
-  //  playerCount++;
-  //
-  //  player.Room = this;
-  //  players.Add(player.ObjectID, player);
-  //
-  //}
-  //
-  //public virtual void EnterGame(BaseObject baseObject)
-  //{
-  //  if (baseObject == null)
-  //    return;
-  //  baseObject.ObjectID = objectCount;
-  //  if (baseObjects.ContainsKey(baseObject.ObjectID))
-  //    return;
-  //  objectCount++;
-  //
-  //  baseObject.Room = this;
-  //  baseObjects.Add(baseObject.ObjectID, baseObject);
-  //}
-  //
-  //public virtual void LeaveGame(Player player)
-  //{
-  //  if (player == null)
-  //    return;
-  //  S_LeaveGame leavePacket = new S_LeaveGame();
-  //  player.Session?.Send(leavePacket);
-  //}
-  //
-  //public virtual void Despawn(BaseObject obj)
-  //{
-  //
-  //}
-  //
-  //
-  //public virtual void Remove(int objectId)
-  //{
-  //  Player player = null;
-  //  if (players.TryGetValue(objectId, out player))
-  //
-  //    if (player == null)
-  //    {
-  //      Console.WriteLine("player null dont remove player");
-  //      return;
-  //    }
-  //
-  //  if (player != null)
-  //  {
-  //    player.Room = null;
-  //    players.Remove(objectId);
-  //  }
-  //}
-  //
-  //
-  //public virtual void Broadcast(IMessage packet)
-  //{
-  //  foreach (Player p in players.Values)
-  //  {
-  //    p.Session?.Send(packet);
-  //  }
-  //}
 }
 

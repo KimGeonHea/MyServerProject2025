@@ -45,7 +45,7 @@ namespace GameServer.Game.Room
         // 일반 스킬은 풀에서 꺼냄
         return skillPool.Rent();
     }
-    public void ReturnBullet(HeroSkill bullet)
+    public void ReturnSkill(HeroSkill bullet)
     {
       skillPool.Return(bullet);
     }
@@ -135,7 +135,7 @@ namespace GameServer.Game.Room
       BaseObject closest = null;
       float minDistSq = float.MaxValue;
 
-      foreach (Hero obj in heros.Values)
+      foreach (Hero obj in heroes.Values)
       {
         Hero other = obj as Hero;
         if (obj.ObjectID == hero.ObjectID)

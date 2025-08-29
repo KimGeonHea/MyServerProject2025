@@ -4,6 +4,7 @@ using Google.Protobuf;
 using Google.Protobuf.Protocol;
 using Microsoft.Extensions.Logging;
 using Server.Data;
+using Server.Game;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,7 +20,7 @@ namespace GameServer.Game.Room
   public partial class GameRoom : Room
   {
 
-    public Dictionary<int/*OjbectId*/, Hero> heros = new Dictionary<int, Hero>();
+    public Dictionary<int/*OjbectId*/, Hero> heroes = new Dictionary<int, Hero>();
 
     
     
@@ -49,40 +50,16 @@ namespace GameServer.Game.Room
         // 장비/스탯 합산
         hero.SetTotalData(player.inventory.GetTotalDataEquipItems());
 
+
+        base.EnterGame(hero);
         // 등록(키를 hero.ObjectID로 통일해 두면 찾기 쉬움)
-        heros[hero.ObjectID] = hero;
+        heroes[hero.ObjectID] = hero;
       }
 
-      // 5) (선택) 클라에게 EnterGame ACK
-      //    로비에서만 보내고 있다면 생략 가능. 필요하면 사용.
-      //player.Session?.Send(new S_EnterGame { PlayerObjectId = player.ObjectID });
 
       // 6) 2명 모이면 시작
       if (players.Count == 2)
         TryStartGame();
-
-      ////base.EnterGmae(player);
-      //if (player == null)
-      //  return;
-      //
-      //if (player.selectHero == null)
-      //  return;
-      //
-      //int templateId = player.selectHero.TemplatedId; // Player가 선택한 영웅 템플릿 ID
-      //player.Session.ServerState = PlayerServerState.ServerStateGame;
-      //
-      //player.Room = this;
-      //players.Add(player.ObjectID, player);
-      //
-      //Hero hero = player.selectHero;
-      //
-      //hero.ObjectID = player.ObjectID;
-      //hero.Room = this;
-      //hero.SetTotalData(player.inventory.GetTotalDataEquipItems());
-      //heros.Add(hero.ObjectID, hero);
-      //
-      //if (players.Count >= 2)
-      //  TryStartGame();
     }
 
    
@@ -267,90 +244,90 @@ namespace GameServer.Game.Room
     {
       base.LeaveGame(player);
     }
+
     public override void Despawn(BaseObject obj)
     {
-      base.Despawn(obj);
-      if (obj == null)
-        return;
-
-      // BaseObject 딕셔너리에서 제거
-
-      if (obj is HeroBullet bullet)
-      {
-        baseObjects.Remove(obj.ObjectID);
-        // Bullet은 풀에 반환
-        ReturnBullet(bullet); // GameRoom의 풀로 반환
-      }
-
-      if (obj is HeroSkill skill)
-      {
-        baseObjects.Remove(obj.ObjectID);
-        // Bullet은 풀에 반환
-        ReturnBullet(skill); // GameRoom의 풀로 반환
-      }
+      if (obj == null) return;
 
       switch (obj.ObjectType)
       {
         case EGameObjectType.Hero:
           if (obj is Hero hero)
-            heros.Remove(hero.ObjectID);
+          {
+            heroes.Remove(hero.ObjectID); // heroes 전용
+            Broadcast(new S_Despawn { ObjectId = hero.ObjectID });
+            hero.Room = null;             // 링크 해제
+          }
+
+          return; 
+
+        case EGameObjectType.Bullet:
+          if (obj is HeroBullet bullet)
+            ReturnBullet(bullet);
           break;
 
-        case EGameObjectType.Projecttile:
-        
-
-        
+        case EGameObjectType.Skill:
+          if (obj is HeroSkill skill)
+            ReturnSkill(skill);
           break;
 
-          // TODO: 다른 오브젝트 타입도 추가 가능
+        case EGameObjectType.Projectile:
+          // 중간 타일 같은거 (장애물)만들까
+          break;
       }
 
-      // 클라이언트에게 오브젝트 제거 통지
-      S_Despawn despawnPacket = new S_Despawn();
-      despawnPacket.ObjectId = obj.ObjectID;
-
-      Broadcast(despawnPacket);
+      Broadcast(new S_Despawn { ObjectId = obj.ObjectID });
+      base.Despawn(obj); // baseObjects.Remove + obj.Room=null
     }
 
     public override void Remove(int objectId)
     {
-      // 0) 플레이어 조회 (한 번만)
       if (!players.TryGetValue(objectId, out var player) || player == null)
         return;
 
-      // 소유 영웅 가져오기 (프로퍼티 이름에 주의)
-      var ownerHero = player.selectHero; // ← 실제 이름이 'selectHero'/'SelectedHero'면 그걸로
+      var ownerHero = player.selectHero;           // 플레이어가 조종하던 영웅
+      int? ownerHeroId = ownerHero?.ObjectID;      // 영웅 오브젝트 ID (null 가능)
 
-      // 영웅 ID(또는 소유자 ID)로 비교하는 편이 안전
-      int? ownerHeroId = ownerHero?.ObjectID;
-
-      // 1) 플레이어 소유 오브젝트(예: 총알) 먼저 제거
-      //    - 컬렉션 수정 중 열거 예외 방지를 위해 스냅샷 사용
-      foreach (var obj in baseObjects.Values.ToList())
+      // 1) 플레이어 소유 오브젝트(총알/스킬 등) 먼저 정리
+      //    - 컬렉션 변경 중 열거 예외 방지 위해 스냅샷 사용
+      var list = baseObjects.Values.ToList();
+      foreach (var obj in list)
       {
+        if (ownerHeroId == null)
+          break;
+
+        // 총알 소유자 검사
         if (obj is HeroBullet bullet)
         {
-          // ID 기준 비교가 참조 비교보다 안전
           var bulletOwnerId = bullet.Owner?.ObjectID;
-          if (ownerHeroId != null && bulletOwnerId == ownerHeroId)
+          if (bulletOwnerId == ownerHeroId)
           {
-            // 공통 정리 경로 사용 (링크 해제/브로드캐스트 등 내부에서 처리)
-            Despawn(obj);
+            Despawn(bullet); // Broadcast(S_Despawn) + base.Despawn 내부에서 처리
+            continue;
+          }
+        }
+
+        // 스킬 소유자 검사 (추가)
+        if (obj is HeroSkill skill)
+        {
+          var skillOwnerId = skill.Owner?.ObjectID;
+          if (skillOwnerId == ownerHeroId)
+          {
+            Despawn(skill);  // ReturnSkill 등은 Despawn/타입별 분기에서 처리
+            continue;
           }
         }
       }
 
-      // 2) 영웅 자체도 룸 오브젝트로 등록되어 있다면 디스폰
+      // 2) 영웅 자체도 룸 오브젝트로 등록되어 있다면 Despawn
       if (ownerHeroId != null && baseObjects.TryGetValue(ownerHeroId.Value, out var heroObj))
         Despawn(heroObj);
 
-      // 3) 영웅 맵에서 제거 (키가 플레이어ID인지 영웅ID인지에 따라 조정)
-      //    - heros의 키가 '플레이어 ObjectID'라면 아래처럼
-      heros.Remove(objectId);
-      //    - 만약 '영웅 ObjectID'로 키를 쓴다면:
-      // if (ownerHeroId != null) heros.Remove(ownerHeroId.Value);
+      // 3) 영웅 맵에서 제거 (키가 플레이어ID인지 영웅ID인지에 맞게 조정)
+      //    - 현재 코멘트대로 '플레이어 ObjectID'를 키로 쓰는 구조라면 아래 유지
+      heroes.Remove(objectId);
 
-      // 4) 마지막으로 플레이어 제거 (링크 해제 등은 base.Remove에서 처리)
+      // 4) 마지막으로 플레이어 제거(링크 해제 등은 base.Remove에서 처리)
       base.Remove(objectId);
     }
 
@@ -359,28 +336,6 @@ namespace GameServer.Game.Room
       base.Close();
     }
 
-    public void AllClear()
-    {
-      foreach (var player in players.Values.ToArray())
-      {
-        player.Room = null; 
-        Remove(player.PlayerDbId);
-      }
-      foreach (var obj in baseObjects.Values.ToArray())
-      {
-        obj.Room = null;  
-        Remove(obj.ObjectID);
-      }
-      foreach (var hero in heros.Values.ToArray())
-      {
-        hero.Room = null;
-        Remove(hero.ObjectID);
-      }
-
-      players.Clear();
-      baseObjects.Clear();
-      heros.Clear();
-    }
 
     public bool IsEmptyRoom()
     {
