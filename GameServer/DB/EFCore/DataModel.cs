@@ -31,6 +31,8 @@ namespace Server.Game
     public int Diamond { get; set; }
     public int RoomId { get; set; } // MMO에 만필요
     public int Energy { get; set; }
+
+    public int InventoryCapacity { get; set; }
     public string StageName { get; set; }
     
     // 플레이어가 보유한 영웅들 (1:N 관계)

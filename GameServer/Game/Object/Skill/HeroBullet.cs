@@ -54,6 +54,8 @@ namespace GameServer.Game
     {
       Owner = owner;
       TempleteId = owner.TemplatedId;
+      ObjectType = EGameObjectType.Bullet;
+      
 
       HeroSkillData skillData = null;
       if (DataManager.heroSkillDict.TryGetValue(TempleteId , out skillData))
@@ -67,12 +69,8 @@ namespace GameServer.Game
       bulletRange = skillData.Range;
       startPosition = owner.Position;
 
-
       startPosition = new Vector3(owner.Position.X, startPos.Y, owner.Position.Z); // 발사 위치 조정 (Y축 1.0f 위로) 
-
-      ObjectType = EGameObjectType.Projecttile;
       TempleteID = skillData.TemplateId;
-
       Position = startPosition;
       damage = owner.HeroData.AttackDamage; // 발사체 피해량은 소유자의 공격력으로 설정
       Console.WriteLine(startPosition);
@@ -138,7 +136,7 @@ namespace GameServer.Game
       totalRadius *= totalRadius;
       GameRoom room = Owner.Room as GameRoom;
 
-      foreach (var obj in room.heros.Values)
+      foreach (var obj in room.heroes.Values)
       {
         if (obj.ObjectType != EGameObjectType.Hero)
           continue;

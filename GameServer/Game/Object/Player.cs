@@ -148,23 +148,5 @@ namespace GameServer
       //SendRefreshStat();
     }
 
-
-    //public static player MakeHero(HeroDb heardb)
-    //{
-    //  player hero = new player();
-    //  hero.TemplatedId = heardb.TemplateId;
-    //  hero = heardb.PlayerDbId ?? throw new InvalidOperationException("PlayerDbId is null");
-    //  hero.HeroDbId = heardb.HeroDbId;
-    //  hero.Slot = heardb.Slot;
-    //
-    //  HeroData herodata = null;
-    //  DataManager.heroDict.TryGetValue(hero.TemplatedId, out herodata);
-    //  if (herodata != null)
-    //  {
-    //    hero.heroData = herodata;
-    //  }
-    //
-    //  return hero;
-    //}
   }
 }

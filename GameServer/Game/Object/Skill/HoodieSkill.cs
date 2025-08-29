@@ -44,8 +44,8 @@ namespace GameServer.Game
     {
       base.Init(owner, direction, targetPosition);
 
-      ObjectType = EGameObjectType.Projecttile;
-      TempleteID = TempleteId;
+      ObjectType = EGameObjectType.Skill;
+      TempleteID = owner.TemplatedId + 1;
       damage = owner.HeroData.AttackDamage;
 
       startPosition = new Vector3(owner.Position.X, 0.5f, owner.Position.Z);
@@ -145,7 +145,7 @@ namespace GameServer.Game
       GameRoom room = Owner.Room as GameRoom;
       float radiusSq = heroSkillData.Radius * 0.3f;
 
-      foreach (var obj in room.heros.Values)
+      foreach (var obj in room.heroes.Values)
       {
         if (obj == null || obj.ObjectID == Owner.ObjectID)
           continue;
@@ -166,7 +166,7 @@ namespace GameServer.Game
       GameRoom room = Owner.Room as GameRoom;
       float radiusSq = heroSkillData.Radius * heroSkillData.Radius;
 
-      foreach (var obj in room.heros.Values)
+      foreach (var obj in room.heroes.Values)
       {
         if (obj == null || obj.ObjectID == Owner.ObjectID)
           continue;

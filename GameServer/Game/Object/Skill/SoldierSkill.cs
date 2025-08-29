@@ -34,13 +34,20 @@ namespace GameServer.Game
     {
       base.Init(owner, start, targetPosition);
 
-      ObjectType = EGameObjectType.Projecttile;
-      TempleteID = TempleteId;
+      ObjectType = EGameObjectType.Skill;
+      TempleteID = owner.TemplatedId + 1;
       damage = Owner.SkillDamage;
 
       startPosition = new Vector3(Owner.Position.X, start.Y, Owner.Position.Z);
 
       this.targetPosition = targetPosition;
+
+      HeroSkillData skillData = null;
+      if (DataManager.heroSkillDict.TryGetValue(TempleteId, out skillData))
+      {
+        heroSkillData = skillData;
+      }
+
 
       CalculateVelocity_FromHeight(startPosition, this.targetPosition, yMultiplier, lifeTime);
       Position = startPosition;
@@ -102,7 +109,7 @@ namespace GameServer.Game
       GameRoom room = Owner.Room as GameRoom;
       float radiusSq = 3 * 0.3f;
 
-      foreach (var obj in room.heros.Values)
+      foreach (var obj in room.heroes.Values)
       {
         if (obj == null || obj.ObjectID == Owner.ObjectID)
           continue;
@@ -123,7 +130,7 @@ namespace GameServer.Game
       GameRoom room = Owner.Room as GameRoom;
       float radiusSq = 3 * 3;//heroSkillData.Radius * heroSkillData.Radius;
 
-      foreach (var obj in room.heros.Values)
+      foreach (var obj in room.heroes.Values)
       {
         if (obj == null || obj.ObjectID == Owner.ObjectID)
           continue;
