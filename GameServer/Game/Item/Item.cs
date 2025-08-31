@@ -6,6 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Net.Sockets;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -59,8 +61,7 @@ namespace Server.Game
       }
       set
       {
-        if (Info.IsNew == value) return; // 변화 없으면 무시
-        Info.IsNew = LastAcquiredAtUtc > SeenAcquiredUtc;
+        Info.IsNew = value;
       }
     }
 
@@ -226,6 +227,28 @@ namespace Server.Game
        //6. 패킷전송.
       SendChangeItemSlotPacket(owner);
     }
+
+    public void ApplyMemoryItemSeen(Player player)
+    {
+      if (player == null)
+        return;
+
+      // 지금 '새 아이템'인가? (획득시각 > 본 시각)
+      bool isNewNow = LastAcquiredAtUtc > SeenAcquiredUtc;
+      if (!isNewNow)
+        return; // 이미 본 상태면 아무 것도 안 함
+
+      // 메모리 선적용: '본 것으로'만 마킹 (획득 시각은 그대로)
+      SeenAcquiredUtc = LastAcquiredAtUtc;
+      IsNew = false; // 로컬 UI 즉시 OFF
+
+
+      SendApplyNewSeen(player);
+
+
+      DBManager.ItemSeenNoti(player, this);
+    }
+
     public EItemSlotType GetEquipSlotType()
     {
       return Utils.GetEquipSlotType(SubType);
@@ -263,6 +286,13 @@ namespace Server.Game
 
       return item;
     }
+    public void SendApplyNewSeen(Player owner)
+    {
+      S_ItemClick packet = new S_ItemClick();
+      packet.ItemDbId = this.ItemDbId;
+      owner.Session?.Send(packet);
+    }
+
     public void SendUpdatePacket(Player owner)
     {
       S_AddItem packet = new S_AddItem();

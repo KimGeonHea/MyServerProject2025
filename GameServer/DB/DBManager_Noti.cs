@@ -102,6 +102,35 @@ namespace Server.Game
       });
     }
 
+    public static void ItemSeenNoti(Player player, Item item)
+    {
+      if (player == null || item == null)
+        return;
+
+      if (item.SeenAcquiredUtc >= item.LastAcquiredAtUtc) 
+        return; // 이미 본 상태면 스킵
+
+      // 이번 획득분까지 본 것으로 마킹
+      var itemdb = new ItemDb
+      {
+        ItemDbId = item.ItemDbId,
+        SeenAcquiredUtc = item.LastAcquiredAtUtc,
+        LastAcquiredAtUtc = DateTime.UtcNow
+      };
+
+      Push(player.PlayerDbId, () =>
+      {
+        using (var db = new GameDbContext())
+        {
+          db.Entry(itemdb).State = EntityState.Unchanged;
+          db.Entry(itemdb).Property(nameof(ItemDb.SeenAcquiredUtc)).IsModified = true;
+          db.Entry(itemdb).Property(nameof(ItemDb.LastAcquiredAtUtc)).IsModified = true;
+
+          db.SaveChangesEx();
+        }
+      });
+    }
+
     //public static void EquipHeroNoti(Player player, Hero hero)
     //{
     //  if (player == null || hero == null)

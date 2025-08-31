@@ -82,6 +82,20 @@ namespace GameServer.Game.Room
       return null;
     }
 
+    public void HanldeItemClick(Player player, C_ItemClick packet )
+    {
+      if (player == null)
+        return;
+      Item item = player.inventory.GetItemByDbId(packet.ItemDbId);
+
+      if (item == null)
+        return;
+
+      item.ApplyMemoryItemSeen(player);
+      //DBManager.ItemSeenNoti(player, item);
+    }
+
+
 
     public void HanldeEquipItem(Player player, C_EquipItem packet)
     {

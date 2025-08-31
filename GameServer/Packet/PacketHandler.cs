@@ -132,7 +132,24 @@ class PacketHandler
     //});
 
   }
+  public static void C_ItemClickHandler(PacketSession session, IMessage packet)
+  {
+    C_ItemClick pkt = packet as C_ItemClick;
+    ClientSession clientSession = session as ClientSession;
 
+    Player player = clientSession.player;
+    if (player == null)
+      return;
+
+
+    LobbyRoom room = player.Room as LobbyRoom;
+    if (room == null) return;
+
+    room.Push(room.HanldeItemClick, player, pkt);
+  }
+
+
+  
   public static void C_EquipItemHandler(PacketSession session, IMessage packet)
   {
     C_EquipItem pkt = packet as C_EquipItem;
