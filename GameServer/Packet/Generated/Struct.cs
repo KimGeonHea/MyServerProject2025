@@ -52,14 +52,14 @@ namespace Google.Protobuf.Protocol {
             "bmZvEjAKDnBsYXllclN0YXRJbmZvGAEgASgLMhguUHJvdG9jb2wuUGxheWVy",
             "U3RhdEluZm8SIQoFaGVyb3MYAiADKAsyEi5Qcm90b2NvbC5IZXJvSW5mbxIh",
             "CgVpdGVtcxgDIAMoCzISLlByb3RvY29sLkl0ZW1JbmZvEigKDHNlbGVjdGVk",
-            "SGVybxgEIAEoCzISLlByb3RvY29sLkhlcm9JbmZvIpwBCghJdGVtSW5mbxIQ",
+            "SGVybxgEIAEoCzISLlByb3RvY29sLkhlcm9JbmZvIqsBCghJdGVtSW5mbxIQ",
             "CghpdGVtRGJJZBgBIAEoAxISCgp0ZW1wbGF0ZUlkGAIgASgFEi0KDGl0ZW1T",
             "bG90VHlwZRgDIAEoDjIXLlByb3RvY29sLkVJdGVtU2xvdFR5cGUSDQoFY291",
             "bnQYBCABKAUSFAoMZW5jaGFudENvdW50GAUgASgFEhYKDnJlbWFpbmluZ1Rp",
-            "Y2tzGAYgASgFIlwKC0NoYXRNZXNzYWdlEhIKCnBsYXllckRiSWQYASABKAUS",
-            "EgoKcGxheWVyTmFtZRgCIAEoCRITCgt0ZXh0TWVzc2FnZRgDIAEoCRIQCghj",
-            "aGF0VGltZRgEIAEoCUIbqgIYR29vZ2xlLlByb3RvYnVmLlByb3RvY29sYgZw",
-            "cm90bzM="));
+            "Y2tzGAYgASgFEg0KBWlzTmV3GAcgASgIIlwKC0NoYXRNZXNzYWdlEhIKCnBs",
+            "YXllckRiSWQYASABKAUSEgoKcGxheWVyTmFtZRgCIAEoCRITCgt0ZXh0TWVz",
+            "c2FnZRgDIAEoCRIQCghjaGF0VGltZRgEIAEoCUIbqgIYR29vZ2xlLlByb3Rv",
+            "YnVmLlByb3RvY29sYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.Protocol.EnumReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
@@ -72,7 +72,7 @@ namespace Google.Protobuf.Protocol {
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Protocol.HeroInfo), global::Google.Protobuf.Protocol.HeroInfo.Parser, new[]{ "ObjectInfo", "UpperState", "LowerState", "PosInfo" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Protocol.HeroMove), global::Google.Protobuf.Protocol.HeroMove.Parser, new[]{ "ObjectInfo", "UpperState", "LowerState", "PosInfo" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Protocol.PlayerInfo), global::Google.Protobuf.Protocol.PlayerInfo.Parser, new[]{ "PlayerStatInfo", "Heros", "Items", "SelectedHero" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Protocol.ItemInfo), global::Google.Protobuf.Protocol.ItemInfo.Parser, new[]{ "ItemDbId", "TemplateId", "ItemSlotType", "Count", "EnchantCount", "RemainingTicks" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Protocol.ItemInfo), global::Google.Protobuf.Protocol.ItemInfo.Parser, new[]{ "ItemDbId", "TemplateId", "ItemSlotType", "Count", "EnchantCount", "RemainingTicks", "IsNew" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Protocol.ChatMessage), global::Google.Protobuf.Protocol.ChatMessage.Parser, new[]{ "PlayerDbId", "PlayerName", "TextMessage", "ChatTime" }, null, null, null, null)
           }));
     }
@@ -2244,6 +2244,7 @@ namespace Google.Protobuf.Protocol {
       count_ = other.count_;
       enchantCount_ = other.enchantCount_;
       remainingTicks_ = other.remainingTicks_;
+      isNew_ = other.isNew_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -2318,6 +2319,17 @@ namespace Google.Protobuf.Protocol {
       }
     }
 
+    /// <summary>Field number for the "isNew" field.</summary>
+    public const int IsNewFieldNumber = 7;
+    private bool isNew_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsNew {
+      get { return isNew_; }
+      set {
+        isNew_ = value;
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as ItemInfo);
@@ -2337,6 +2349,7 @@ namespace Google.Protobuf.Protocol {
       if (Count != other.Count) return false;
       if (EnchantCount != other.EnchantCount) return false;
       if (RemainingTicks != other.RemainingTicks) return false;
+      if (IsNew != other.IsNew) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -2349,6 +2362,7 @@ namespace Google.Protobuf.Protocol {
       if (Count != 0) hash ^= Count.GetHashCode();
       if (EnchantCount != 0) hash ^= EnchantCount.GetHashCode();
       if (RemainingTicks != 0) hash ^= RemainingTicks.GetHashCode();
+      if (IsNew != false) hash ^= IsNew.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -2386,6 +2400,10 @@ namespace Google.Protobuf.Protocol {
         output.WriteRawTag(48);
         output.WriteInt32(RemainingTicks);
       }
+      if (IsNew != false) {
+        output.WriteRawTag(56);
+        output.WriteBool(IsNew);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -2411,6 +2429,9 @@ namespace Google.Protobuf.Protocol {
       }
       if (RemainingTicks != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(RemainingTicks);
+      }
+      if (IsNew != false) {
+        size += 1 + 1;
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -2440,6 +2461,9 @@ namespace Google.Protobuf.Protocol {
       }
       if (other.RemainingTicks != 0) {
         RemainingTicks = other.RemainingTicks;
+      }
+      if (other.IsNew != false) {
+        IsNew = other.IsNew;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -2474,6 +2498,10 @@ namespace Google.Protobuf.Protocol {
           }
           case 48: {
             RemainingTicks = input.ReadInt32();
+            break;
+          }
+          case 56: {
+            IsNew = input.ReadBool();
             break;
           }
         }

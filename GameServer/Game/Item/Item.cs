@@ -50,6 +50,22 @@ namespace Server.Game
     public int OwnerDbId { get; set; }
 
     public bool Stackable { get; set; }
+
+    public bool IsNew 
+    {
+      get
+      {
+        return Info.IsNew;
+      }
+      set
+      {
+        if (Info.IsNew == value) return; // 변화 없으면 무시
+        Info.IsNew = LastAcquiredAtUtc > SeenAcquiredUtc;
+      }
+    }
+
+    public DateTime LastAcquiredAtUtc;
+    public DateTime SeenAcquiredUtc;
     public Item Init(ItemDb itemdb)
     {
       int templateId = itemdb.TemplateId;
@@ -62,9 +78,13 @@ namespace Server.Game
       ItemSlotType = itemdb.EquipSlot;
       Count = itemdb.Count;
       EnchantCount = itemdb.EnchantCount;
+      TemplateId = templateId;
+      LastAcquiredAtUtc = itemdb.LastAcquiredAtUtc;
+      SeenAcquiredUtc = itemdb.SeenAcquiredUtc;
+      IsNew = LastAcquiredAtUtc > SeenAcquiredUtc;
+      //itemData setting//
       Stackable = itemData.Stacable;
       maxCount = itemData.MaxCount;
-      TemplateId = templateId;
 
       return this;
     }
@@ -224,25 +244,13 @@ namespace Server.Game
         TemplateId = itemdb.TemplateId,
         ItemSlotType = itemdb.EquipSlot,
         EnchantCount = itemdb.EnchantCount,
-        Count = itemdb.Count
+        Count = itemdb.Count,
+        IsNew =  itemdb.LastAcquiredAtUtc > itemdb.SeenAcquiredUtc,
       };
 
       return itemInfo;
     }
 
-    public static Item MakieItem(Player player, int itemTemplateId)
-    {
-      ItemDb itemdb = DBManager.CreateItemDb(player.PlayerDbId, itemTemplateId);
-
-      int templateId = itemdb.TemplateId;
-      if (DataManager.itemDict.TryGetValue(templateId, out ItemData itemData) == false)
-        return null;
-
-      Item item = new Item();
-
-      item.Init(itemdb);
-      return item;
-    }
     public static Item MakeItem(ItemDb itemDb)
     {
       int templateId = itemDb.TemplateId;

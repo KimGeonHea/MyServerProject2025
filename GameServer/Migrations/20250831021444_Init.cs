@@ -50,7 +50,8 @@ namespace GameServer.Migrations
                     TemplateId = table.Column<int>(type: "int", nullable: false),
                     EnchantCount = table.Column<int>(type: "int", nullable: false),
                     CreatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    LastAcquiredAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    SeenAcquiredUtc = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -74,7 +75,8 @@ namespace GameServer.Migrations
                     Count = table.Column<int>(type: "int", nullable: false),
                     EnchantCount = table.Column<int>(type: "int", nullable: false),
                     CreatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    LastAcquiredAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    SeenAcquiredUtc = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {

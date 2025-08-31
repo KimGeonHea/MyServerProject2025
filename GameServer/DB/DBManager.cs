@@ -254,6 +254,8 @@ namespace Server.Game
           TemplateId = 10001,
           Count = 1,
           EquipSlot = EItemSlotType.Inventory,
+          LastAcquiredAtUtc = DateTime.UtcNow,                              // 새로 들어옴!
+          SeenAcquiredUtc = DateTime.MinValue,                // 아직 안 봤다 → 레드닷 ON
         };
         player.Items.Add(itemDb);
 

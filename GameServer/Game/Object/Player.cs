@@ -35,14 +35,15 @@ namespace GameServer
 
     public Inventory inventory { get; set; }
     public InvenHero invenHero { get; set; }
-
+    // 선택된 영웅//
     public Hero selectHero { get; set; }  
-
+    // 주간 보상 마지막 수령시간//
     public DateTime LastDailyRewardTime;
+    // 주간보상 플래그//
     public int WeeklyRewardFlags { get; set; } = 0;
-
+    //주 시작 요일//
     public DayOfWeek WeekStartDay;
-
+    //시간 9시로 초기화//  0~256만으로 충분함
     public byte ResetHourLocal = 9;
     
 

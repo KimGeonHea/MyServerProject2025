@@ -33,17 +33,20 @@ namespace GameServer.Migrations
                     b.Property<int>("EnchantCount")
                         .HasColumnType("int");
 
+                    b.Property<DateTime>("LastAcquiredAtUtc")
+                        .HasColumnType("datetime2");
+
                     b.Property<int?>("PlayerDbId")
                         .HasColumnType("int");
+
+                    b.Property<DateTime>("SeenAcquiredUtc")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("Slot")
                         .HasColumnType("int");
 
                     b.Property<int>("TemplateId")
                         .HasColumnType("int");
-
-                    b.Property<DateTime>("UpdatedAtUtc")
-                        .HasColumnType("datetime2");
 
                     b.HasKey("HeroDbId");
 
@@ -72,14 +75,17 @@ namespace GameServer.Migrations
                     b.Property<int>("EquipSlot")
                         .HasColumnType("int");
 
+                    b.Property<DateTime>("LastAcquiredAtUtc")
+                        .HasColumnType("datetime2");
+
                     b.Property<int?>("PlayerDbId")
                         .HasColumnType("int");
 
+                    b.Property<DateTime>("SeenAcquiredUtc")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("TemplateId")
                         .HasColumnType("int");
-
-                    b.Property<DateTime>("UpdatedAtUtc")
-                        .HasColumnType("datetime2");
 
                     b.HasKey("ItemDbId");
 
