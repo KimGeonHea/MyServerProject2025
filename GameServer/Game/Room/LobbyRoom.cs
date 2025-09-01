@@ -206,6 +206,25 @@ namespace GameServer.Game.Room
       player.Session?.Send(s_ItemList);
     }
 
+    public void HandleAddInventoryCapacity(Player player)
+    {
+      if (player == null) 
+        return;
+      int consumeGold = 100;
+
+      if(player.playerStatInfo.Gold >= consumeGold)
+      {
+        player.playerStatInfo.Gold -= consumeGold;
+        player.inventory.AddInventoryCapacity(consumeGold);
+      }
+
+      S_InvenCapaticy s_InventoryCapacity = new S_InvenCapaticy()
+      {
+        InvenCapacity = player.playerStatInfo.InventoryCapacity
+      };
+      player.Session?.Send(s_InventoryCapacity);
+    }
+
     public override void Broadcast(IMessage packet)
     {
       base.Broadcast(packet);

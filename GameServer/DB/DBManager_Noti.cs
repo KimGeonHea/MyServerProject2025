@@ -130,33 +130,32 @@ namespace Server.Game
         }
       });
     }
+    public static void UpdatePlayerInventoryCapacity(Player player , int gold , int inventoryCapacity)
+    {
+      if(inventoryCapacity <= 0)
+        return; 
 
-    //public static void EquipHeroNoti(Player player, Hero hero)
-    //{
-    //  if (player == null || hero == null)
-    //    return;
-    //
-    //  HeroDb heroDb = new HeroDb()
-    //  {
-    //    HeroDbId = hero.HeroDbId,
-    //    Slot = hero.Slot
-    //  };
-    //
-    //  Push(player.PlayerDbId, () =>
-    //  {
-    //    using (GameDbContext db = new GameDbContext())
-    //    {
-    //      db.Entry(heroDb).State = EntityState.Unchanged;
-    //      db.Entry(heroDb).Property(nameof(HeroDb.Slot)).IsModified = true;
-    //
-    //      bool success = db.SaveChangesEx();
-    //      if (!success)
-    //      {
-    //
-    //      }
-    //    }
-    //  });
-    //}
+      if (player == null)
+        return;
+
+      Push(player.PlayerDbId, () =>
+      {
+        using (GameDbContext db = new GameDbContext())
+        {
+          var playerDb = new PlayerDb
+          {
+            PlayerDbId = player.PlayerDbId,
+            Gold = gold,
+            InventoryCapacity = inventoryCapacity
+          };
+
+          db.playerDbs.Attach(playerDb);
+          db.Entry(playerDb).Property(p => p.InventoryCapacity).IsModified = true;
+          db.SaveChangesEx();
+        }
+      });
+    }
+
     public static void EquipHeroNoti(Player player, Hero hero1, Hero hero2)
     {
       if (player == null)

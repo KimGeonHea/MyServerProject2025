@@ -218,22 +218,13 @@ class PacketHandler
     if (player == null)
       return;
 
-    //LobbyRoom room = player.Room as LobbyRoom;
-    //
-    //if (room == null) return;
-    //
-    //LobbyJobManager.Push(player.PlayerDbId, () =>
-    //{
-    //  room.HandleChat(player, pkt);
-    //});
-
     LobbyRoom room = player.Room as LobbyRoom;
     if (room == null)
       return;
     
     room.Push(room.HandleChat, player, pkt);
   }
-
+  
   public static void C_ChatListHandler(PacketSession session, IMessage packet)
   {
     var pkt = packet as C_ChatList;
@@ -248,24 +239,34 @@ class PacketHandler
     if (player == null)
       return;
 
-
-    //LobbyRoom room = player.Room as LobbyRoom;
-    //
-    //if (room == null) return;
-    //
-    //LobbyJobManager.Push(player.PlayerDbId, () =>
-    //{
-    //  room.HandleChatList(player);
-    //});
-
-
     LobbyRoom room = player.Room as LobbyRoom;
     if (room == null)
       return;
     
     room.Push(room.HandleChatList, player);
   }
+  
 
+  public static void C_InvenCapaticyHandler(PacketSession session, IMessage packet)
+  {
+    var pkt = packet as C_InvenCapaticy;
+    if (pkt == null)
+      return;
+
+    var clientSession = session as ClientSession;
+    if (clientSession == null)
+      return;
+
+    Player player = clientSession.player;
+    if (player == null)
+      return;
+
+    LobbyRoom room = player.Room as LobbyRoom;
+    if (room == null)
+      return;
+
+    room.Push(room.HandleAddInventoryCapacity, player);
+  }
   public static void C_ItemListHandler(PacketSession session, IMessage packet)
   {
     var pkt = packet as C_ItemList;
@@ -279,15 +280,6 @@ class PacketHandler
     Player player = clientSession.player;
     if (player == null)
       return;
-
-    //LobbyRoom room = player.Room as LobbyRoom;
-    //
-    //if (room == null) return;
-    //
-    //LobbyJobManager.Push(player.PlayerDbId, () =>
-    //{
-    //  room.HandleItemList(player);
-    //});
 
     LobbyRoom room = player.Room as LobbyRoom;
     if (room == null)

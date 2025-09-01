@@ -233,12 +233,12 @@ namespace Server.Game
       if (player == null)
         return;
 
-      // 지금 '새 아이템'인가? (획득시각 > 본 시각)
+      // 지금 (획득시각 > 본 시각)
       bool isNewNow = LastAcquiredAtUtc > SeenAcquiredUtc;
       if (!isNewNow)
         return; // 이미 본 상태면 아무 것도 안 함
 
-      // 메모리 선적용: '본 것으로'만 마킹 (획득 시각은 그대로)
+      // 메모리 선적용
       SeenAcquiredUtc = LastAcquiredAtUtc;
       IsNew = false; // 로컬 UI 즉시 OFF
 

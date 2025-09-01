@@ -178,13 +178,13 @@ namespace GameServer.Game.Room
         case ERewardType.ErwardTypeGold:
           player.playerStatInfo.Gold += count;
           player.ApplyAddOrDeleteGoldDiaEnergy(type, count);
-          SaveStatToDb(player);
+          UpdateGoldDia(player);
           break;
 
         case ERewardType.ErwardTypeDiamod:
           player.playerStatInfo.Daimond += count;
           player.ApplyAddOrDeleteGoldDiaEnergy(type, count);
-          SaveStatToDb(player);
+          UpdateGoldDia(player);
           break;
 
         case ERewardType.ErwardTypeObject:
@@ -205,7 +205,7 @@ namespace GameServer.Game.Room
           break;
       }
     }
-    public void SaveStatToDb(Player player)
+    public void UpdateGoldDia(Player player)
     {
       DBManager.Push(player.PlayerDbId, () =>
       {

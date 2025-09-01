@@ -25,7 +25,7 @@ namespace Server.Game
   public class Inventory
   {
     //슬롯 수//
-    public int DEFAULT_SLOT_COUNT = 50;
+    public int inventoryCapacity = 30;
     public Inventory(Player owner )
     {
       Owner = owner;
@@ -41,7 +41,10 @@ namespace Server.Game
     public ToatalEquipData toatalEquipData = new ToatalEquipData();
     public void Init(PlayerDb playerDb)
     {
+      inventoryCapacity = playerDb.InventoryCapacity;
+
       var list = playerDb.Items.ToList();
+
       for (int i = 0; i < list.Count; i++)
       {
         Item item = new Item();
@@ -137,7 +140,7 @@ namespace Server.Game
 
     public bool IsInventoryFull()
     {
-      return InventoryItems.Count >= DEFAULT_SLOT_COUNT;
+      return InventoryItems.Count >= inventoryCapacity;
     }
     public void AddCount(long itemDbId, int count, bool sendToClient = false, bool dbNoti = true)
     {
@@ -203,6 +206,17 @@ namespace Server.Game
         return;
 
       DBManager.DeleteItem(Owner, item);
+    }
+
+    public void AddInventoryCapacity()
+    {
+      inventoryCapacity += 10;
+
+      if (inventoryCapacity > 100)
+      {
+        inventoryCapacity = 100;
+      }
+      DBManager.UpdatePlayerInventoryCapacity(Owner , inventoryCapacity);  
     }
   }
 
