@@ -150,6 +150,7 @@ namespace Server.Game
           };
 
           db.playerDbs.Attach(playerDb);
+          db.Entry(playerDb).Property(p => p.Gold).IsModified = true;
           db.Entry(playerDb).Property(p => p.InventoryCapacity).IsModified = true;
           db.SaveChangesEx();
         }

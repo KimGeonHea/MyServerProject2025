@@ -208,7 +208,7 @@ namespace Server.Game
       DBManager.DeleteItem(Owner, item);
     }
 
-    public void AddInventoryCapacity()
+    public void AddInventoryCapacity(int gold)
     {
       inventoryCapacity += 10;
 
@@ -216,7 +216,7 @@ namespace Server.Game
       {
         inventoryCapacity = 100;
       }
-      DBManager.UpdatePlayerInventoryCapacity(Owner , inventoryCapacity);  
+      DBManager.UpdatePlayerInventoryCapacity(Owner ,gold ,inventoryCapacity);  
     }
   }
 
