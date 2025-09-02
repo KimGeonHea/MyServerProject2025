@@ -25,10 +25,30 @@ namespace Server.Game
   public class Inventory
   {
     //슬롯 수//
-    public int inventoryCapacity = 30;
+    //public int inventoryCapacity;
+
     public Inventory(Player owner )
     {
       Owner = owner;
+    }
+
+    private int _inventoryCapacity;
+
+    public int InventoryCapacity
+    {
+      get => _inventoryCapacity;
+      set
+      {
+        if (_inventoryCapacity == value) 
+          return;   // 변경 없으면 스킵
+        _inventoryCapacity = value;                // 1) 내 값 저장
+
+        if (Owner != null)
+        {
+          // 2) 외부 객체에 전달(필요 시)
+          Owner.playerStatInfo.InventoryCapacity = value;
+        }
+      }
     }
 
     public Player Owner { get; set; }
@@ -41,7 +61,7 @@ namespace Server.Game
     public ToatalEquipData toatalEquipData = new ToatalEquipData();
     public void Init(PlayerDb playerDb)
     {
-      inventoryCapacity = playerDb.InventoryCapacity;
+      InventoryCapacity = playerDb.InventoryCapacity;
 
       var list = playerDb.Items.ToList();
 
@@ -140,7 +160,7 @@ namespace Server.Game
 
     public bool IsInventoryFull()
     {
-      return InventoryItems.Count >= inventoryCapacity;
+      return InventoryItems.Count >= InventoryCapacity;
     }
     public void AddCount(long itemDbId, int count, bool sendToClient = false, bool dbNoti = true)
     {
@@ -210,14 +230,17 @@ namespace Server.Game
 
     public void AddInventoryCapacity(int gold)
     {
-      inventoryCapacity += 10;
+      if (Owner == null)
+        return;
+      InventoryCapacity += 10;
 
-      if (inventoryCapacity > 100)
+      if (InventoryCapacity > 100)
       {
-        inventoryCapacity = 100;
+        InventoryCapacity = 100;
       }
-      DBManager.UpdatePlayerInventoryCapacity(Owner ,gold ,inventoryCapacity);  
+      DBManager.UpdatePlayerInventoryCapacity(Owner ,gold , InventoryCapacity);  
     }
+
   }
 
 

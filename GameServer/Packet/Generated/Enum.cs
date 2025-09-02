@@ -84,11 +84,14 @@ namespace Google.Protobuf.Protocol {
             "EA0qpwEKDEVMZWF2ZVJlYXNvbhIaChZFX0xFQVZFX1JFQVNPTl9VTktOT1dO",
             "EAASHAoYRV9MRUFWRV9SRUFTT05fVk9MVU5UQVJZEAESGQoVRV9MRUFWRV9S",
             "RUFTT05fS0lDS0VEEAISHwobRV9MRUFWRV9SRUFTT05fRElTQ09OTkVDVEVE",
-            "EAMSIQodRV9MRUFWRV9SRUFTT05fTUFUQ0hfQ09NUExFVEUQBEIbqgIYR29v",
-            "Z2xlLlByb3RvYnVmLlByb3RvY29sYgZwcm90bzM="));
+            "EAMSIQodRV9MRUFWRV9SRUFTT05fTUFUQ0hfQ09NUExFVEUQBCp/Cg1FQ3Vy",
+            "cmVuY3lUeXBlEh4KGkVDVVJSRU5DWV9UWVBFX1VOU1BFQ0lGSUVEEAASFwoT",
+            "RUNVUlJFTkNZX1RZUEVfR09MRBABEhoKFkVDVVJSRU5DWV9UWVBFX0RJQU1P",
+            "TkQQAhIZChVFQ1VSUkVOQ1lfVFlQRV9FTkVSR1kQA0IbqgIYR29vZ2xlLlBy",
+            "b3RvYnVmLlByb3RvY29sYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
-          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Google.Protobuf.Protocol.ECreatureState), typeof(global::Google.Protobuf.Protocol.PlayerServerState), typeof(global::Google.Protobuf.Protocol.EMoveDir), typeof(global::Google.Protobuf.Protocol.EItemSlotType), typeof(global::Google.Protobuf.Protocol.EItemSubType), typeof(global::Google.Protobuf.Protocol.EItemStatus), typeof(global::Google.Protobuf.Protocol.EItemGrade), typeof(global::Google.Protobuf.Protocol.EGameObjectType), typeof(global::Google.Protobuf.Protocol.EHeroGrade), typeof(global::Google.Protobuf.Protocol.EHeroUpperState), typeof(global::Google.Protobuf.Protocol.EHeroLowerState), typeof(global::Google.Protobuf.Protocol.ERewardType), typeof(global::Google.Protobuf.Protocol.EItemType), typeof(global::Google.Protobuf.Protocol.EItemDBState), typeof(global::Google.Protobuf.Protocol.EHeroSkillType), typeof(global::Google.Protobuf.Protocol.EHeroInternalEventType), typeof(global::Google.Protobuf.Protocol.ELeaveReason), }, null, null));
+          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Google.Protobuf.Protocol.ECreatureState), typeof(global::Google.Protobuf.Protocol.PlayerServerState), typeof(global::Google.Protobuf.Protocol.EMoveDir), typeof(global::Google.Protobuf.Protocol.EItemSlotType), typeof(global::Google.Protobuf.Protocol.EItemSubType), typeof(global::Google.Protobuf.Protocol.EItemStatus), typeof(global::Google.Protobuf.Protocol.EItemGrade), typeof(global::Google.Protobuf.Protocol.EGameObjectType), typeof(global::Google.Protobuf.Protocol.EHeroGrade), typeof(global::Google.Protobuf.Protocol.EHeroUpperState), typeof(global::Google.Protobuf.Protocol.EHeroLowerState), typeof(global::Google.Protobuf.Protocol.ERewardType), typeof(global::Google.Protobuf.Protocol.EItemType), typeof(global::Google.Protobuf.Protocol.EItemDBState), typeof(global::Google.Protobuf.Protocol.EHeroSkillType), typeof(global::Google.Protobuf.Protocol.EHeroInternalEventType), typeof(global::Google.Protobuf.Protocol.ELeaveReason), typeof(global::Google.Protobuf.Protocol.ECurrencyType), }, null, null));
     }
     #endregion
 
@@ -252,6 +255,13 @@ namespace Google.Protobuf.Protocol {
     /// 경기 종료
     /// </summary>
     [pbr::OriginalName("E_LEAVE_REASON_MATCH_COMPLETE")] MatchComplete = 4,
+  }
+
+  public enum ECurrencyType {
+    [pbr::OriginalName("ECURRENCY_TYPE_UNSPECIFIED")] Unspecified = 0,
+    [pbr::OriginalName("ECURRENCY_TYPE_GOLD")] Gold = 1,
+    [pbr::OriginalName("ECURRENCY_TYPE_DIAMOND")] Diamond = 2,
+    [pbr::OriginalName("ECURRENCY_TYPE_ENERGY")] Energy = 3,
   }
 
   #endregion

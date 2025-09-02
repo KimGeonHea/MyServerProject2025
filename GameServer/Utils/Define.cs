@@ -21,5 +21,7 @@ namespace GameServer.Utils
     public const int MAX_BULLET_COUNT = 100; // 최대 총알 수
     public const int MAX_SKILL_COUNT = 50; // 최대 스킬 수
     public static readonly TimeSpan GameTickInterval = TimeSpan.FromMilliseconds(16); // 게임 틱 간격 (60 FPS 기준)
+
+    public const int INVENTORY_CAPACITY_CONSUMGOLD = 100; // 인벤토리 확장시 소모 골드
   }
 }

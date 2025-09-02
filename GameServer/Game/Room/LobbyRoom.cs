@@ -1,4 +1,5 @@
-﻿using Google.Protobuf;
+﻿using GameServer.Utils;
+using Google.Protobuf;
 using Google.Protobuf.Protocol;
 using Server;
 using Server.Data;
@@ -210,7 +211,7 @@ namespace GameServer.Game.Room
     {
       if (player == null) 
         return;
-      int consumeGold = 100;
+      int consumeGold = Define.INVENTORY_CAPACITY_CONSUMGOLD;
 
       if(player.playerStatInfo.Gold >= consumeGold)
       {
@@ -220,7 +221,12 @@ namespace GameServer.Game.Room
 
       S_InvenCapaticy s_InventoryCapacity = new S_InvenCapaticy()
       {
-        InvenCapacity = player.playerStatInfo.InventoryCapacity
+        InvenCapacity = player.playerStatInfo.InventoryCapacity,
+        Cost = new CurrencyAmount 
+        {
+          Type = ECurrencyType.Gold,
+          Amount = consumeGold 
+        },
       };
       player.Session?.Send(s_InventoryCapacity);
     }
