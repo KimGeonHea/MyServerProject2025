@@ -225,7 +225,7 @@ namespace GameServer.Game.Room
         Cost = new CurrencyAmount 
         {
           Type = ECurrencyType.Gold,
-          Amount = consumeGold 
+          Amount = player.playerStatInfo.Gold
         },
       };
       player.Session?.Send(s_InventoryCapacity);
