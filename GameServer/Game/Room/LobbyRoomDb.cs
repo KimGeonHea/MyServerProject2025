@@ -84,9 +84,11 @@ namespace GameServer.Game.Room
       DateTime lastUtc = TzUtil.AsUtc(player.LastDailyRewardTime);
 
       // 오늘 리셋 창(현지 resetHour ~ 다음 resetHour)
+      //예시 : 2025-09-02 09:00, 2025-09-03 09:00 로 변환
+      //UTC 2025-09-02 00:00:00Z ,  2025-09-03 00:00:00Z
       (DateTime startUtc, DateTime endUtc) = TzUtil.GetDailyWindowUtc(tzId, nowUtc, resetHour);
 
-      // 오늘 이미 받았으면 종료(멱등)
+      //예시 : 2025-09-02 09:00, 2025-09-03 09:00 의 사이 값 경계가 아니면 리턴
       if (lastUtc >= startUtc && lastUtc < endUtc)
         return;
 
@@ -113,6 +115,7 @@ namespace GameServer.Game.Room
       int nextBit = 1 << countThisWeek;
       player.WeeklyRewardFlags |= nextBit;
 
+
       // 타임스탬프/보상
       player.LastDailyRewardTime = nowUtc;   // 항상 UTC 저장
       int rewardDay = countThisWeek + 1;     // 1~7 보상 단계
@@ -121,6 +124,7 @@ namespace GameServer.Game.Room
       // DB 부분 업데이트
       DBManager.Push(player.PlayerDbId, () =>
       {
+
         using var db = new GameDbContext();
         var row = new PlayerDb
         {
@@ -178,13 +182,13 @@ namespace GameServer.Game.Room
         case ERewardType.ErwardTypeGold:
           player.playerStatInfo.Gold += count;
           player.ApplyAddOrDeleteGoldDiaEnergy(type, count);
-          UpdateGoldDia(player);
+          DBupdateGoldAndDaimond(player);
           break;
 
         case ERewardType.ErwardTypeDiamod:
           player.playerStatInfo.Daimond += count;
           player.ApplyAddOrDeleteGoldDiaEnergy(type, count);
-          UpdateGoldDia(player);
+          DBupdateGoldAndDaimond(player);
           break;
 
         case ERewardType.ErwardTypeObject:
@@ -205,7 +209,7 @@ namespace GameServer.Game.Room
           break;
       }
     }
-    public void UpdateGoldDia(Player player)
+    public void DBupdateGoldAndDaimond(Player player)
     {
       DBManager.Push(player.PlayerDbId, () =>
       {

@@ -242,10 +242,7 @@ namespace Server.Game
       SeenAcquiredUtc = LastAcquiredAtUtc;
       IsNew = false; // 로컬 UI 즉시 OFF
 
-
       SendApplyNewSeen(player);
-
-
       DBManager.ItemSeenNoti(player, this);
     }
 

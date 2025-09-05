@@ -31,6 +31,17 @@ namespace GameServer.Game.Room
     public override void Update(float deltaTime)
     {
       base.Update(deltaTime);
+      // 큐가 비었으면 굳이 돌리지 않아도 됨
+      if (ratingBuckets.Count == 0)
+        return;
+
+      matchTickAcc += deltaTime;
+
+      if (matchTickAcc >= MatchTryInterval)
+      {
+        matchTickAcc = 0f;
+        CompleteMatchByRating(); // 대기 시간이 늘어난 효과를 반영하여 재평가
+      }
     }
 
     public override void EnterGame(Player player)
@@ -98,7 +109,7 @@ namespace GameServer.Game.Room
 
 
 
-    public void HanldeEquipItem(Player player, C_EquipItem packet)
+    public void HandleEquipItem(Player player, C_EquipItem packet)
     {
       if (player == null)
         return;
@@ -155,7 +166,7 @@ namespace GameServer.Game.Room
       player.Session?.Send(chatList);
     }
 
-    public void HandleSelctHero(Player player, int heroDbID)
+    public void HandleSelectHero(Player player, int heroDbID)
     {
       if (player == null) return;
 
@@ -213,22 +224,10 @@ namespace GameServer.Game.Room
         return;
       int consumeGold = Define.INVENTORY_CAPACITY_CONSUMGOLD;
 
-      if(player.playerStatInfo.Gold >= consumeGold)
+      if (player.playerStatInfo.Gold >= consumeGold)
       {
-        player.playerStatInfo.Gold -= consumeGold;
-        player.inventory.AddInventoryCapacity(consumeGold);
+        player.inventory.AddInventoryCapacity(player, consumeGold);
       }
-
-      S_InvenCapaticy s_InventoryCapacity = new S_InvenCapaticy()
-      {
-        InvenCapacity = player.playerStatInfo.InventoryCapacity,
-        Cost = new CurrencyAmount 
-        {
-          Type = ECurrencyType.Gold,
-          Amount = player.playerStatInfo.Gold
-        },
-      };
-      player.Session?.Send(s_InventoryCapacity);
     }
 
     public override void Broadcast(IMessage packet)

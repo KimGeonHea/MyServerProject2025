@@ -171,7 +171,7 @@ class PacketHandler
     LobbyRoom room = player.Room as LobbyRoom;
     if (room == null) return;
 
-    room.Push(room.HanldeEquipItem, player,pkt);
+    room.Push(room.HandleEquipItem, player,pkt);
   }
 
   public static void C_UnEquipItemHandler(PacketSession session, IMessage packet)
@@ -367,7 +367,7 @@ class PacketHandler
     if (room == null)
       return;
     
-    room.Push(room.HandleSelctHero, player , pkt.HeroDbId);
+    room.Push(room.HandleSelectHero, player , pkt.HeroDbId);
   }
 
   public static void C_DailyRewardHandler(PacketSession session, IMessage packet)

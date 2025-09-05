@@ -23,5 +23,7 @@ namespace GameServer.Utils
     public static readonly TimeSpan GameTickInterval = TimeSpan.FromMilliseconds(16); // 게임 틱 간격 (60 FPS 기준)
 
     public const int INVENTORY_CAPACITY_CONSUMGOLD = 100; // 인벤토리 확장시 소모 골드
+    public const int INVENTORY_UP_CAPACITY = 6; // 증감 
+    public const int INVENTORY_MAXCAPACITY = 200; //최대
   }
 }

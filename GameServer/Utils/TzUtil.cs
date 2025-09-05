@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore.Diagnostics;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -111,7 +112,7 @@ namespace GameServer.Utils
     /// 로컬(TZ) 기준 'resetHourLocal'~다음날 같은 시각까지의 일일창을 UTC로 반환.
     /// DST 전환일도 안전(로컬 시각을 Unspecified로 만들어 변환).
     /// </summary>
-    public static (DateTime startUtc, DateTime endUtc) GetDailyWindowUtc(string tzId,DateTime nowUtc, byte resetHourLocal =9)
+    public static (DateTime startUtc, DateTime endUtc) GetDailyWindowUtc(string tzId, DateTime nowUtc, byte resetHourLocal =9)
     {
       var tz = Resolve(tzId);
       nowUtc = AsUtc(nowUtc);
@@ -166,5 +167,6 @@ namespace GameServer.Utils
       var unspecified = DateTime.SpecifyKind(localUnspecified, DateTimeKind.Unspecified);
       return TimeZoneInfo.ConvertTimeToUtc(unspecified, tz);
     }
+
   }
 }

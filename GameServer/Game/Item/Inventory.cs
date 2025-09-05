@@ -1,12 +1,14 @@
 ﻿using Azure.Identity;
 using GameServer;
 using GameServer.Game;
+using GameServer.Utils;
 using Google.Protobuf.Protocol;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using Microsoft.Identity.Client;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -228,22 +230,36 @@ namespace Server.Game
       DBManager.DeleteItem(Owner, item);
     }
 
-    public void AddInventoryCapacity(int gold)
+    public void AddInventoryCapacity(Player player,int consumeGold)
     {
-      if (Owner == null)
+      if (player == null)
         return;
-      InventoryCapacity += 10;
-
-      if (InventoryCapacity > 100)
+     
+      InventoryCapacity += Define.INVENTORY_UP_CAPACITY;
+      //TODO메세지 요청 보내기 맥스 상황// 
+      if (InventoryCapacity > Define.INVENTORY_MAXCAPACITY)
       {
-        InventoryCapacity = 100;
+        InventoryCapacity = Define.INVENTORY_MAXCAPACITY;
+        return;
       }
-      DBManager.UpdatePlayerInventoryCapacity(Owner ,gold , InventoryCapacity);  
+      //메모리 처리//
+      player.Gold -= consumeGold;
+
+      S_InvenCapaticy s_InventoryCapacity = new S_InvenCapaticy()
+      {
+        InvenCapacity = player.playerStatInfo.InventoryCapacity,
+        Cost = new CurrencyAmount
+        {
+          //확정 골드 보내줌//
+          Type = ECurrencyType.Gold,
+          Amount = player.playerStatInfo.Gold
+        },
+      };
+      player.Session?.Send(s_InventoryCapacity);
+      //Db 처리//
+      DBManager.UpdatePlayerInventoryCapacity(player, consumeGold, InventoryCapacity);  
     }
-
   }
-
-
-
 }
+
 

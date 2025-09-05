@@ -21,16 +21,49 @@ namespace GameServer
 
     public Room Room { get; set; }
     public int PlayerDbId { get; set; }
+
+    public int objectId { get; set; }
     public int ObjectID
     {
       get { return objectId; }
       set { objectId = value; }
     }
+    public int Gold
+    {
+      get { return playerStatInfo.Gold; }
+      set { playerStatInfo.Gold = value; }
+    }
+    public int Diamond
+    {
+      get { return playerStatInfo.Daimond; }
+      set { playerStatInfo.Daimond = value; }
+    }
 
-    public int objectId { get;set; }
+    public int Energy
+    {
+      get { return playerStatInfo.Energy; }
+      set { playerStatInfo.Energy = value; }
+    }
 
-    public PlayerStatInfo playerStatInfo { get; set; }  = new PlayerStatInfo();
-   
+    public int Exp
+    {
+      get { return playerStatInfo.Exp; }
+      set { playerStatInfo.Exp = value; }
+    }
+    public int TotalExp
+    {
+      get { return playerStatInfo.TotalExp; }
+      set { playerStatInfo.TotalExp = value; }
+    }
+
+    public int Level
+    {
+      get { return playerStatInfo.Level; }
+      set { playerStatInfo.Level = value; }
+    }
+
+
+    public PlayerStatInfo playerStatInfo { get; set; } = new PlayerStatInfo();
     public ClientSession Session { get; set; }
 
     public Inventory inventory { get; set; }
@@ -46,6 +79,7 @@ namespace GameServer
     //시간 9시로 초기화//  0~256만으로 충분함
     public byte ResetHourLocal = 9;
     
+
 
     public static Player MakePlayer(ClientSession session , PlayerDb playerDb)
     {
