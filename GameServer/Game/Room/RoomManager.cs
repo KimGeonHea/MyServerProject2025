@@ -109,9 +109,18 @@ namespace GameServer.Game.Room
 
       return true; // “삭제 예약” 성공
     }
+    public GameRoom Find(int roomId)
+    {
+      lock (_roomsLock)
+        return _rooms.TryGetValue(roomId, out var r) ? r : null;
+    }
 
-    public GameRoom Find(int roomId) => _rooms.TryGetValue(roomId, out var r) ? r : null;
-    public List<GameRoom> GetRooms() => _rooms.Values.ToList();
+    public List<GameRoom> GetRooms()
+    {
+      lock (_roomsLock)
+        return _rooms.Values.ToList();
+    }
+
 
     //public static RoomManager Instance { get; } = new RoomManager();
     //

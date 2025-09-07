@@ -172,8 +172,8 @@ namespace Server.Game
 
       item.AddCount(Owner, count, sendToClient, dbNoti);
 
-      if (item.ItemSlotType == EItemSlotType.Inventory)
-          Owner.BroadcastPlyerInternalEvent(EHeroInternalEventType.CollectItem, 0, item.TemplateId, count);
+      //if (item.ItemSlotType == EItemSlotType.Inventory)
+      //    Owner.BroadcastPlyerInternalEvent(EHeroInternalEventType.CollectItem, 0, item.TemplateId, count);
     }
 
     /// <summary>

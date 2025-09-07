@@ -83,6 +83,7 @@ namespace Server.Game
       LastAcquiredAtUtc = itemdb.LastAcquiredAtUtc;
       SeenAcquiredUtc = itemdb.SeenAcquiredUtc;
       IsNew = LastAcquiredAtUtc > SeenAcquiredUtc;
+
       //itemData setting//
       Stackable = itemData.Stacable;
       maxCount = itemData.MaxCount;

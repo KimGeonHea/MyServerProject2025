@@ -31,7 +31,7 @@ namespace GameServer.Game.Room
 
     public void RewardTest(Player player)
     {
-      AddReward(player, ERewardType.ErwardTypeObject, itemTemplateId: 10031, count: 1);
+      AddReward(player, ERewardType.ErwardTypeObject, itemTemplateId: 20001, count: 1);
     }
 
     int CountSetBits(int n)
