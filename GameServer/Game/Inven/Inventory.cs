@@ -5,9 +5,12 @@ using GameServer.Utils;
 using Google.Protobuf.Protocol;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using Microsoft.Identity.Client;
+using Microsoft.IdentityModel.Logging;
+using Server.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,8 +23,9 @@ namespace Server.Game
     public int totalDeffence;
     public int totalHealth;
     public int totalSkillDamage;
-    public float totalCriDamage;
+    public float totalCriRate;
     public float totalSpregen;
+    public float totalMoveSpeed;
   }
 
   public class Inventory
@@ -77,6 +81,9 @@ namespace Server.Game
 
     public void Add(Item item, bool sendToClient = false)
     {
+      if (item == null)
+        return;
+    
       AllItems.Add(item.ItemDbId, item);
     
       EItemStatus status = item.GetItemStatus();
@@ -99,8 +106,6 @@ namespace Server.Game
       if (sendToClient)
         item.SendAddPacket(Owner);
     }
-
-  
 
     public void Remove(Item item, bool sendToClient = false)
     {
@@ -135,12 +140,14 @@ namespace Server.Game
     }
     public ToatalEquipData GetTotalDataEquipItems()
     {
-      toatalEquipData.totalAttack = EquippedItems.Values.Sum(e => e.itemData.Attack);
+      toatalEquipData.totalAttack = EquippedItems.Values.Sum(e => e.itemData.Damage);
       toatalEquipData.totalDeffence = EquippedItems.Values.Sum(e => e.itemData.Def);
-      toatalEquipData.totalCriDamage = EquippedItems.Values.Sum(e => (int)e.itemData.CriDamage);
+      //toatalEquipData.totalCriDamage = EquippedItems.Values.Sum(e => (int)e.itemData.CriDamage);
       toatalEquipData.totalHealth =  EquippedItems.Values.Sum(e => e.itemData.Health);
-      toatalEquipData.totalCriDamage = EquippedItems.Values.Sum(e => e.itemData.CriRate);
-      toatalEquipData.totalSkillDamage = EquippedItems.Values.Sum(e => e.itemData.Attack);
+      toatalEquipData.totalCriRate = EquippedItems.Values.Sum(e => e.itemData.CriRate);
+      toatalEquipData.totalSkillDamage = EquippedItems.Values.Sum(e => e.itemData.SkillDamage);
+      toatalEquipData.totalSpregen = EquippedItems.Values.Sum(e => e.itemData.CriRate);
+      toatalEquipData.totalMoveSpeed = EquippedItems.Values.Sum(e => e.itemData.MoveSpeed);
 
       return toatalEquipData;
     }
@@ -175,6 +182,27 @@ namespace Server.Game
       //if (item.ItemSlotType == EItemSlotType.Inventory)
       //    Owner.BroadcastPlyerInternalEvent(EHeroInternalEventType.CollectItem, 0, item.TemplateId, count);
     }
+    public void UseItem(long itemDbId)
+    {
+      Item item = GetItemByDbId(itemDbId);
+
+      if (item == null)
+        return;
+
+
+      //switch (item.ConsumableType)
+      //{
+      //  case EConsumableType.RandomitemBox:
+      //    item.UseItem(Owner, item);
+      //    break;
+      //  case EConsumableType.RandomheroBox:
+      //    break;
+      //  default:
+      //    break;
+      //}
+    }
+
+
 
     /// <summary>
     /// 특정 조건을 만족시키는 아이템 반환

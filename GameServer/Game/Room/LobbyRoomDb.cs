@@ -29,11 +29,17 @@ namespace GameServer.Game.Room
       player.Session?.Send(ptk); // 주석 처리된 부분 복구
     }
 
+
     public void RewardTest(Player player)
     {
-      AddReward(player, ERewardType.ErwardTypeObject, itemTemplateId: 20001, count: 1);
+      AddReward(player, ERewardType.ErwardTypeObject, itemTemplateId: 20000, count: 1);
     }
 
+    /// <summary>
+    /// 여기부터 주간 리워드
+    /// </summary>
+    /// <param name="n"></param>
+    /// <returns></returns>
     int CountSetBits(int n)
     {
       int count = 0;
@@ -45,29 +51,7 @@ namespace GameServer.Game.Room
       return count;
     }
 
-    static DateTime EffectiveLocalDate(DateTime localNow, int resetHourLocal)
-    {
-      var cut = new DateTime(localNow.Year, localNow.Month, localNow.Day, resetHourLocal, 0, 0, localNow.Kind);
-      return (localNow < cut) ? localNow.Date.AddDays(-1) : localNow.Date;
-    }
-
-    // Monday=0 … Sunday=6 로 매핑(weekStartsMonday=true 기준)
-    static (DateTime weekStart, int dayIndex) GetWeekStartAndIndex(DateTime localDate, bool weekStartsMonday)
-    {
-      int dow = (int)localDate.DayOfWeek; // Sunday=0 … Saturday=6
-      if (weekStartsMonday)
-      {
-        int monBased = (dow + 6) % 7;          // Monday=0 … Sunday=6
-
-        return (localDate.AddDays(-monBased), monBased);
-      }
-      else
-      {
-        return (localDate.AddDays(-dow), dow); // Sunday=0 … Saturday=6
-      }
-    }
-
-    public void CheckDailyReward(Player player)
+    public void HandleCheckDailyReward(Player player)
     {
       if (player == null) 
         return;
@@ -169,7 +153,7 @@ namespace GameServer.Game.Room
           break;
 
         case 7:
-          AddReward(player, ERewardType.ErwardTypeObjects, objectIds: new List<int> { 1003, 1004, 1005 }); // 다양한 아이템 1개씩
+          AddReward(player, ERewardType.ErwardTypeObjects, objectIds: new List<int> { 10003, 10004, 10005 }); // 다양한 아이템 1개씩
           break;
       }
     }

@@ -12,7 +12,7 @@ using Server.Game;
 namespace GameServer.Migrations
 {
     [DbContext(typeof(GameDbContext))]
-    [Migration("20250831021444_Init")]
+    [Migration("20250910170948_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -24,6 +24,30 @@ namespace GameServer.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("Server.Game.GachaDb", b =>
+                {
+                    b.Property<int>("GachaDbId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PityCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("PlayerId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TemplateId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("GachaDbId");
+
+                    b.HasIndex("PlayerId");
+
+                    b.ToTable("Gacha");
+                });
 
             modelBuilder.Entity("Server.Game.HeroDb", b =>
                 {
@@ -164,6 +188,15 @@ namespace GameServer.Migrations
                         .IsUnique();
 
                     b.ToTable("Player");
+                });
+
+            modelBuilder.Entity("Server.Game.GachaDb", b =>
+                {
+                    b.HasOne("Server.Game.PlayerDb", "Owner")
+                        .WithMany()
+                        .HasForeignKey("PlayerId");
+
+                    b.Navigation("Owner");
                 });
 
             modelBuilder.Entity("Server.Game.HeroDb", b =>

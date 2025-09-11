@@ -56,19 +56,20 @@ namespace Server.Data
     public int TemplateId; //템플릿 아이디
     public string Name; //아이템 이름
     public EItemType ItemType;
-    public EItemSubType Type;
+    public EItemSubType SubType;
+    public EConsumableType ConsumableType;
     public EItemGrade Grade;
     public string IconImage;
     public string PrefabName;
     public bool Stacable;
     public int MaxCount;
-    public int Attack;
+    public int Damage;
     public int Def;
     public int SpRegen;
     public int Health;
     public float MoveSpeed;
     public float CriRate;
-    public float CriDamage;
+    public int SkillDamage;
     public int enchantCount;
     public int SellCount;
     public string DescriptionTextID;

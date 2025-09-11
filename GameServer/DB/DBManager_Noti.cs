@@ -28,6 +28,7 @@ namespace Server.Game
             db.Entry(stackItemDb).Property(nameof(ItemDb.EquipSlot)).IsModified = true;
           }
 
+
           if (existingItemDb != null)
           {
             db.Entry(existingItemDb).State = EntityState.Unchanged;
@@ -69,11 +70,70 @@ namespace Server.Game
             Console.WriteLine($"[MakeItemAsync] SaveChanges 실패 - PlayerId:{player.PlayerDbId}");
             return;
           }
-
-          
         }
       });
     }
+    /// <summary>
+    /// PlayerId, TemplateId 기준 가챠 피티 업서트
+    /// Unchanged로 붙이고 PityCount/UpdatedAtUtc만 수정
+    /// </summary>
+    public static void SavePityAsync(Player player, int templateId, int pity)
+    {
+      Push(player.PlayerDbId, () =>
+      {
+        using (var db = new GameDbContext())
+        {
+          // PlayerId 타입 주의: GachaDb.PlayerId가 int? 이면 캐스팅 필요
+          int playerId = checked((int)player.PlayerDbId);
+
+          // PK가 GachaDbId라서 Find(playerId, templateId) 못 씀  조회 후 분기
+          var exist = db.gachaDbs
+                        .AsNoTracking()
+                        .Where(x => x.PlayerId == playerId && x.TemplateId == templateId)
+                        .Select(x => new { x.GachaDbId })
+                        .FirstOrDefault();
+
+          if (exist == null)
+          {
+            // 신규 추가
+            var row = new GachaDb
+            {
+              GachaDbId = GenerateGachaDbId(),
+              PlayerId = playerId,
+              TemplateId = templateId,
+              PityCount = pity,
+              UpdatedAtUtc = DateTime.UtcNow
+            };
+
+            db.gachaDbs.Add(row);
+          }
+          else
+          {
+            // 부분 업데이트(분리 엔티티를 붙여 특정 컬럼만 수정)
+            var row = new GachaDb
+            {
+              GachaDbId = exist.GachaDbId,
+              PlayerId = playerId,   // 안전을 위해 세팅
+              TemplateId = templateId, // 안전을 위해 세팅
+              PityCount = pity,
+              UpdatedAtUtc = DateTime.UtcNow
+            };
+
+            db.Entry(row).State = EntityState.Unchanged;
+            db.Entry(row).Property(nameof(GachaDb.PityCount)).IsModified = true;
+            db.Entry(row).Property(nameof(GachaDb.UpdatedAtUtc)).IsModified = true;
+          }
+
+          bool success = db.SaveChangesEx();
+          if (!success)
+          {
+            Console.WriteLine($"[SavePityAsync] SaveChanges 실패 - PlayerId:{player.PlayerDbId}, TemplateId:{templateId}");
+            return;
+          }
+        }
+      });
+    }
+
 
     public static void EquipItemNoti(Player player, Item item)
     {

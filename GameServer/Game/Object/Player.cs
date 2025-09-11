@@ -68,6 +68,8 @@ namespace GameServer
 
     public Inventory inventory { get; set; }
     public InvenHero invenHero { get; set; }
+
+    public InvenGacha invenGacha { get; set; }
     // 선택된 영웅//
     public Hero selectHero { get; set; }  
     // 주간 보상 마지막 수령시간//
@@ -109,9 +111,12 @@ namespace GameServer
 
       inventory = new Inventory(this);
       invenHero = new InvenHero(this);
-      
+      invenGacha= new InvenGacha(this);
+
+
       invenHero.Init(playerDb);
       inventory.Init(playerDb);
+      invenGacha.Init(playerDb);
 
       WeekStartDay = playerDb.WeekStartDay;
       LastDailyRewardTime = playerDb.LastDailyRewardTime;

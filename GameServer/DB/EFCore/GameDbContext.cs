@@ -13,6 +13,7 @@ namespace Server.Game
 		public DbSet<PlayerDb> playerDbs { get; set; }
 		public DbSet<HeroDb> Heroes { get; set; }
 		public DbSet<ItemDb> Items { get; set; }
+		public DbSet<GachaDb> gachaDbs { get; set; }
 
 		static readonly ILoggerFactory _logger = LoggerFactory.Create(builder => { builder.AddConsole(); });
 

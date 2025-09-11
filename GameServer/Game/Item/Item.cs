@@ -46,7 +46,14 @@ namespace Server.Game
       get { return Info.EnchantCount; }
       set { Info.EnchantCount = value; }
     }
-    public EItemSubType SubType { get { return itemData.Type; } }
+    public EItemSubType SubType 
+    {
+      get { return itemData.SubType; } 
+    }
+    public EConsumableType ConsumableType 
+    { 
+      get { return itemData.ConsumableType; } 
+    }
 
     public int maxCount { get; set; }
     public int OwnerDbId { get; set; }
@@ -145,14 +152,27 @@ namespace Server.Game
 
       Count = Math.Clamp(Count + addCount, 0, maxCount);
 
+      if (sendToClient)
+        SendAddPacket(owner);
+
       if (Count == 0)
       {
         DBManager.DeleteItemNoti(owner, this, dbNoti);
+      }
+    }
+
+    public void UseItem(Player owner)
+    {
+      if (owner == null)
+        return;
+      if (Count > 0)
+        Count -= 1;
+
+      if (Count == 0)
+      {
+        DBManager.DeleteItemNoti(owner, this, true);
         return;
       }
-
-      if (sendToClient)
-        SendAddPacket(owner);
     }
 
 

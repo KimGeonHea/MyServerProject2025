@@ -22,6 +22,30 @@ namespace GameServer.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("Server.Game.GachaDb", b =>
+                {
+                    b.Property<int>("GachaDbId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PityCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("PlayerId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TemplateId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("GachaDbId");
+
+                    b.HasIndex("PlayerId");
+
+                    b.ToTable("Gacha");
+                });
+
             modelBuilder.Entity("Server.Game.HeroDb", b =>
                 {
                     b.Property<int>("HeroDbId")
@@ -161,6 +185,15 @@ namespace GameServer.Migrations
                         .IsUnique();
 
                     b.ToTable("Player");
+                });
+
+            modelBuilder.Entity("Server.Game.GachaDb", b =>
+                {
+                    b.HasOne("Server.Game.PlayerDb", "Owner")
+                        .WithMany()
+                        .HasForeignKey("PlayerId");
+
+                    b.Navigation("Owner");
                 });
 
             modelBuilder.Entity("Server.Game.HeroDb", b =>

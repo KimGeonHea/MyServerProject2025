@@ -188,21 +188,32 @@ class PacketHandler
     if (player == null)
       return;
 
-    //LobbyRoom room = player.Room as LobbyRoom;
-    //
-    //if (room == null) return;
-    //
-    //LobbyJobManager.Push(player.PlayerDbId, () =>
-    //{
-    //  room.HandleUnEquipItem(player, pkt.ItemDbId);
-    //});
-
-
     LobbyRoom room = player.Room as LobbyRoom;
     if (room == null)
       return;
     
     room.Push(room.HandleUnEquipItem, player, pkt.ItemDbId);
+  }
+
+  public static void C_UseItemHandler(PacketSession session, IMessage packet)
+  {
+    var pkt = packet as C_UseItem;
+    if (pkt == null)
+      return;
+
+    var clientSession = session as ClientSession;
+    if (clientSession == null)
+      return;
+
+    Player player = clientSession.player;
+    if (player == null)
+      return;
+
+    LobbyRoom room = player.Room as LobbyRoom;
+    if (room == null)
+      return;
+
+    room.Push(room.HandleUseItem, player, pkt);
   }
   public static void C_ChatHandler(PacketSession session, IMessage packet)
   {
@@ -397,7 +408,7 @@ class PacketHandler
     if (room == null)
       return;
 
-    room.Push(room.CheckDailyReward, player);
+    room.Push(room.HandleCheckDailyReward, player);
   }
   public static void C_DailyRewardOpenHandler(PacketSession session, IMessage packet)
   {

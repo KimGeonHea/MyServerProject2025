@@ -125,10 +125,13 @@ namespace GameServer.Game.Room
 
     public void HandleUnEquipItem(Player player, long itemDbId)
     {
-      if (player == null) return;
+      if (player == null) 
+        return;
 
       player.inventory.UnEquipItem(itemDbId);
     }
+
+  
 
     public void HandleChat(Player player, C_Chat c_Chat)
     {

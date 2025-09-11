@@ -109,6 +109,8 @@ namespace Server.Game
     public static int _playerDbIdGenerator = 0;
     public static int GeneratePlayerDbId() { return Interlocked.Increment(ref _playerDbIdGenerator); }
 
+    public static int _gachaDbIdGenerator = 0;
+    public static int GenerateGachaDbId() { return Interlocked.Increment(ref _gachaDbIdGenerator); }
     public static void InitDbIds()
     {
       // item
@@ -127,9 +129,14 @@ namespace Server.Game
         if (playerDb != null)
           Interlocked.Exchange(ref _playerDbIdGenerator, playerDb.PlayerDbId);
 
+        GachaDb gachaDb = context.gachaDbs.OrderByDescending(x => x.GachaDbId).FirstOrDefault();
+        if(gachaDb != null)
+          Interlocked.Exchange(ref _gachaDbIdGenerator, gachaDb.GachaDbId);
+
         Console.WriteLine($"HeroDbIdGenerator initialized to {_heroDbIdGenerator}");
         Console.WriteLine($"ItemDbIdGenerator initialized to {_itemDbIdGenerator}");
         Console.WriteLine($"PlayerDbIdGenerator initialized to {_playerDbIdGenerator}");
+        Console.WriteLine($"GenerateGachaDbId initialized to {_gachaDbIdGenerator}");
       }
     }
     #endregion
@@ -284,6 +291,8 @@ namespace Server.Game
 
           db.Entry(player).Collection(p => p.Heros).Load();
           db.Entry(player).Collection(p => p.Items).Load();
+          db.Entry(player).Collection(p => p.Gachas).Load();
+
 
           if (CanGiveDailyEnergy(player , nowUtc))
           {

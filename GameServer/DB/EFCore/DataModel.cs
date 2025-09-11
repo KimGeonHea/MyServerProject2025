@@ -44,6 +44,8 @@ namespace Server.Game
     // 플레이어의 인벤토리 아이템 (1:N 관계)
     public ICollection<ItemDb> Items { get; set; } = new List<ItemDb>();
 
+    public ICollection<GachaDb> Gachas { get; set; } = new List<GachaDb>(); 
+
     [NotMapped]
     public bool[] WeeklyRewardsClaimed
     {
@@ -82,7 +84,7 @@ namespace Server.Game
     public int EnchantCount { get; set; }  // 강화 수치
 
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
-    public DateTime LastAcquiredAtUtc { get; set; } = DateTime.UtcNow; // 드롭/구매/우편/스택↑때만 갱신
+    public DateTime LastAcquiredAtUtc { get; set; } = DateTime.UtcNow; // 드롭/구매/우편/스택때만 갱신
     public DateTime SeenAcquiredUtc { get; set; } = DateTime.MinValue; // “봤다”로 처리한 최신 획득분 시각
 
 
@@ -107,30 +109,21 @@ namespace Server.Game
     public int EnchantCount { get; set; }  // 강화 수치
 
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
-    public DateTime LastAcquiredAtUtc { get; set; } = DateTime.UtcNow; // 드롭/구매/우편/스택↑때만 갱신
+    public DateTime LastAcquiredAtUtc { get; set; } = DateTime.UtcNow; // 드롭/구매/우편/스택 때만 갱신
     public DateTime SeenAcquiredUtc { get; set; } = DateTime.MinValue; // “봤다”로 처리한 최신 획득분 시각
   }
 
-  public enum UiSection
-  {
-    Inventory = 0,
-    Mail = 1,
-    DailyReward = 2,
-    Forge = 3,
-    Gacha = 4,
-    Friend = 5,
-    Ranking = 6,
-    // 필요시 추가
-  }
-  [Table("UserUiSeen")]
-  public class UserUiSeenDb
+  //가차시스템//
+  [Table("Gacha")]
+  public class GachaDb
   {
     [DatabaseGenerated(DatabaseGeneratedOption.None)]
-    public int UserUiSeenDbId { get; set; }
-    [ForeignKey("Owner")] 
-    public int? PlayerDbId { get; set; }
-    public PlayerDb Player { get; set; }
-    public UiSection Section { get; set; }
-    public DateTime LastSeenAtUtc { get; set; } = DateTime.MinValue;
+    public int GachaDbId { get; set; }
+    public int TemplateId { get; set; } 
+    [ForeignKey("Owner")]
+    public int? PlayerId { get; set; }
+    public PlayerDb Owner { get; set; }
+    public int PityCount { get; set; }
+    public DateTime UpdatedAtUtc { get; set; }
   }
 }

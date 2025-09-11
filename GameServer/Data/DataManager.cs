@@ -1,4 +1,5 @@
-﻿using GameServer.Game.Object;
+﻿using GameServer.Game;
+using GameServer.Game.Object;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -26,6 +27,8 @@ namespace Server.Data
       heroDict = LoadJson<HeroLoader, int, HeroData>("HeroData").MakeDict();
       itemDict = LoadJson<ItemLoader, int, ItemData>("ItemData").MakeDict();
       heroSkillDict = LoadJson<HeroSkillLoader, int, HeroSkillData>("HeroSkillData").MakeDict();
+
+      ItemBox.BuildPools(DataManager.itemDict.Values);
       //LoadMap();
       LoadMapGrid();
 

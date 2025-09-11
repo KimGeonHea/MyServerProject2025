@@ -76,6 +76,16 @@ namespace Server
             loginReq.Items.Add(iteminfo);
           }
 
+          foreach(GachaDb gachaDb in playerdb.Gachas)
+          {
+            GachaInfo gacha = new GachaInfo()
+            {
+              TemplateId = gachaDb.TemplateId,
+              PityCount = gachaDb.PityCount,
+            };
+            loginReq.Gachas.Add(gacha);
+          }
+
           Send(loginReq);
           LobbyRoom room = LobbyRoom.Instance;
           if (room == null)

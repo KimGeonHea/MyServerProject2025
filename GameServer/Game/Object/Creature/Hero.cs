@@ -18,7 +18,7 @@ namespace GameServer.Game
     public int totalHealth;
     public int totalSkillDamage;
     public float totalCriRate;
-    public float totalCriDamage;
+    public float totalMoveSpeed;
     public float totalSpregen;
   }
 
@@ -89,11 +89,11 @@ namespace GameServer.Game
       set => totalStatData.totalDeffence = value;
     } 
 
-    public float CriDamage
-    {
-      get => totalStatData.totalCriDamage;
-      set => totalStatData.totalCriDamage = value;
-    } 
+    //public float CriDamage
+    //{
+    //  //get => totalStatData.totalCriDamage;
+    //  //set => totalStatData.totalCriDamage = value;
+    //} 
 
     public float CriRate
     {
@@ -132,8 +132,10 @@ namespace GameServer.Game
         totalStatData.totalAttack = HeroData.AttackDamage+ toatalEquipData.totalAttack;
         totalStatData.totalDeffence = HeroData.Defence + toatalEquipData.totalDeffence; //+ HeroStatInfo.TotalDefence;
         totalStatData.totalHealth = HeroData.MaxHp + toatalEquipData.totalHealth; //+ HeroStatInfo.TotalHealth;
-        totalStatData.totalCriDamage = HeroData.CriDamage + toatalEquipData.totalCriDamage; //+ HeroStatInfo.TotalCriDamage;
-        totalStatData.totalSkillDamage  = HeroData.AttackDamage + toatalEquipData.totalAttack; // 스킬 데미지는 기본 공격력으로 설정
+        
+        totalStatData.totalSkillDamage  = HeroData.AttackDamage + toatalEquipData.totalSkillDamage; // 스킬 데미지는 기본 공격력으로 설정
+        totalStatData.totalSpregen = HeroData.staminaRegenSpeed + toatalEquipData.totalSpregen;
+        totalStatData.totalMoveSpeed = HeroData.MoveSpeed + toatalEquipData.totalMoveSpeed;
 
         CurHp = totalStatData.totalHealth; // 현재 HP는 최대 HP로 초기화
         MaxHp = totalStatData.totalHealth; // 최대 HP 설정

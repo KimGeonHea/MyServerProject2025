@@ -58,11 +58,12 @@ namespace Google.Protobuf.Protocol {
             "bnQYBCABKAUSFAoMZW5jaGFudENvdW50GAUgASgFEhYKDnJlbWFpbmluZ1Rp",
             "Y2tzGAYgASgFEg0KBWlzTmV3GAcgASgIIlwKC0NoYXRNZXNzYWdlEhIKCnBs",
             "YXllckRiSWQYASABKAUSEgoKcGxheWVyTmFtZRgCIAEoCRITCgt0ZXh0TWVz",
-            "c2FnZRgDIAEoCRIQCghjaGF0VGltZRgEIAEoCSI3CgZXYWxsZXQSDAoEZ29s",
-            "ZBgBIAEoBRIPCgdkaWFtb25kGAIgASgFEg4KBmVuZXJneRgDIAEoBSJHCg5D",
-            "dXJyZW5jeUFtb3VudBIlCgR0eXBlGAEgASgOMhcuUHJvdG9jb2wuRUN1cnJl",
-            "bmN5VHlwZRIOCgZhbW91bnQYAiABKAVCG6oCGEdvb2dsZS5Qcm90b2J1Zi5Q",
-            "cm90b2NvbGIGcHJvdG8z"));
+            "c2FnZRgDIAEoCRIQCghjaGF0VGltZRgEIAEoCSIyCglHYWNoYUluZm8SEgoK",
+            "dGVtcGxhdGVJZBgBIAEoBRIRCglwaXR5Q291bnQYAiABKAUiNwoGV2FsbGV0",
+            "EgwKBGdvbGQYASABKAUSDwoHZGlhbW9uZBgCIAEoBRIOCgZlbmVyZ3kYAyAB",
+            "KAUiRwoOQ3VycmVuY3lBbW91bnQSJQoEdHlwZRgBIAEoDjIXLlByb3RvY29s",
+            "LkVDdXJyZW5jeVR5cGUSDgoGYW1vdW50GAIgASgFQhuqAhhHb29nbGUuUHJv",
+            "dG9idWYuUHJvdG9jb2xiBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.Protocol.EnumReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
@@ -77,6 +78,7 @@ namespace Google.Protobuf.Protocol {
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Protocol.PlayerInfo), global::Google.Protobuf.Protocol.PlayerInfo.Parser, new[]{ "PlayerStatInfo", "Heros", "Items", "SelectedHero" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Protocol.ItemInfo), global::Google.Protobuf.Protocol.ItemInfo.Parser, new[]{ "ItemDbId", "TemplateId", "ItemSlotType", "Count", "EnchantCount", "RemainingTicks", "IsNew" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Protocol.ChatMessage), global::Google.Protobuf.Protocol.ChatMessage.Parser, new[]{ "PlayerDbId", "PlayerName", "TextMessage", "ChatTime" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Protocol.GachaInfo), global::Google.Protobuf.Protocol.GachaInfo.Parser, new[]{ "TemplateId", "PityCount" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Protocol.Wallet), global::Google.Protobuf.Protocol.Wallet.Parser, new[]{ "Gold", "Diamond", "Energy" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Protocol.CurrencyAmount), global::Google.Protobuf.Protocol.CurrencyAmount.Parser, new[]{ "Type", "Amount" }, null, null, null, null)
           }));
@@ -2731,6 +2733,163 @@ namespace Google.Protobuf.Protocol {
 
   }
 
+  public sealed partial class GachaInfo : pb::IMessage<GachaInfo> {
+    private static readonly pb::MessageParser<GachaInfo> _parser = new pb::MessageParser<GachaInfo>(() => new GachaInfo());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<GachaInfo> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::Google.Protobuf.Protocol.StructReflection.Descriptor.MessageTypes[11]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public GachaInfo() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public GachaInfo(GachaInfo other) : this() {
+      templateId_ = other.templateId_;
+      pityCount_ = other.pityCount_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public GachaInfo Clone() {
+      return new GachaInfo(this);
+    }
+
+    /// <summary>Field number for the "templateId" field.</summary>
+    public const int TemplateIdFieldNumber = 1;
+    private int templateId_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int TemplateId {
+      get { return templateId_; }
+      set {
+        templateId_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "pityCount" field.</summary>
+    public const int PityCountFieldNumber = 2;
+    private int pityCount_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int PityCount {
+      get { return pityCount_; }
+      set {
+        pityCount_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as GachaInfo);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(GachaInfo other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (TemplateId != other.TemplateId) return false;
+      if (PityCount != other.PityCount) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (TemplateId != 0) hash ^= TemplateId.GetHashCode();
+      if (PityCount != 0) hash ^= PityCount.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (TemplateId != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(TemplateId);
+      }
+      if (PityCount != 0) {
+        output.WriteRawTag(16);
+        output.WriteInt32(PityCount);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (TemplateId != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(TemplateId);
+      }
+      if (PityCount != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(PityCount);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(GachaInfo other) {
+      if (other == null) {
+        return;
+      }
+      if (other.TemplateId != 0) {
+        TemplateId = other.TemplateId;
+      }
+      if (other.PityCount != 0) {
+        PityCount = other.PityCount;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            TemplateId = input.ReadInt32();
+            break;
+          }
+          case 16: {
+            PityCount = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
   public sealed partial class Wallet : pb::IMessage<Wallet> {
     private static readonly pb::MessageParser<Wallet> _parser = new pb::MessageParser<Wallet>(() => new Wallet());
     private pb::UnknownFieldSet _unknownFields;
@@ -2739,7 +2898,7 @@ namespace Google.Protobuf.Protocol {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.Protocol.StructReflection.Descriptor.MessageTypes[11]; }
+      get { return global::Google.Protobuf.Protocol.StructReflection.Descriptor.MessageTypes[12]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2924,7 +3083,7 @@ namespace Google.Protobuf.Protocol {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.Protocol.StructReflection.Descriptor.MessageTypes[12]; }
+      get { return global::Google.Protobuf.Protocol.StructReflection.Descriptor.MessageTypes[13]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
