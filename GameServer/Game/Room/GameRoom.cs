@@ -20,10 +20,11 @@ namespace GameServer.Game.Room
   public partial class GameRoom : Room
   {
 
+    double _sendAccum = 0;
+    double _sendInterval = 1.0 / 15.0; // 15Hz로 전송
+
     public Dictionary<int/*OjbectId*/, Hero> heroes = new Dictionary<int, Hero>();
 
-    
-    
     public override void EnterGame(Player player)
     {
       // 0) 가드

@@ -20,7 +20,11 @@ namespace GameServer.Game.Room
 
       // 사용할 상자 아이템
       Item boxItem = player.inventory.GetItemByDbId(req.ItemDbId);
-      if (boxItem == null) { SendToast(player, "아이템이 없습니다."); return; }
+      if (boxItem == null)
+      { 
+        SendToast(player, "아이템이 없습니다."); 
+        return; 
+      }
 
       // 1개/10개
       int boxCount = req.ConsumType switch
@@ -29,7 +33,11 @@ namespace GameServer.Game.Room
         EConsumableType.RandomitemBoxTen => 10,
         _ => 0
       };
-      if (boxCount <= 0) { SendToast(player, "잘못된 소비 타입입니다."); return; }
+      if (boxCount <= 0) 
+      {
+        SendToast(player, "잘못된 소비 타입입니다."); 
+        return; 
+      }
 
       // 상자 타입 검증
       if (boxItem.ConsumableType != EConsumableType.RandomitemBox)
@@ -45,7 +53,15 @@ namespace GameServer.Game.Room
         return;
       }
 
-      OpenItemBoxWithPity(player, boxItem, boxCount);
+      //인벤 용량 체크
+      if(player.inventory.IsInventoryFull(boxCount))
+      {
+        SendToast(player, "인벤토리 용량이 부족합니다.");
+        return;
+      }
+
+
+     OpenItemBoxWithPity(player, boxItem, boxCount);
     }
 
     private void OpenItemBoxWithPity(Player player, Item boxItem, int boxCount)
@@ -70,7 +86,7 @@ namespace GameServer.Game.Room
         {
           reward = ItemBox.PickOneFromAncient();
           if (reward == null) { SendToast(player, "상자(Ancient) 풀이 비어있습니다."); return; }
-          pity = 0; // 보장 발동 → 리셋
+          pity = 0; // 보장 발동 리셋
         }
         else
         {
@@ -81,7 +97,7 @@ namespace GameServer.Game.Room
           }
           pity = ItemBox.IsAncient(reward) ? 0 : pity + 1;
         }
-
+        
         // ===== 항상 신규 아이템 생성 =====
         var newItemDb = new ItemDb
         {
@@ -128,7 +144,10 @@ namespace GameServer.Game.Room
     }
 
     // 프로젝트에 맞게 구현
-    private void SendToast(Player player, string msg) { /* ... */ }
+    private void SendToast(Player player, string msg) 
+    {
+      /* ... */ 
+    }
   }
 }
 

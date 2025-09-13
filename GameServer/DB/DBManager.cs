@@ -228,28 +228,42 @@ namespace Server.Game
         db.SaveChanges();
 
 
-        if(DataManager.heroDict.TryGetValue(101, out HeroData data))
+        if(DataManager.heroDict.TryGetValue(101, out HeroData hoodieData))
         {
           HeroDb heroDb = new HeroDb()
           {
             HeroDbId = DBManager.GenerateHeroDbId(),
             PlayerDbId = player.PlayerDbId,
-            TemplateId = data.TemplateId,
+            TemplateId = hoodieData.TemplateId,
             Slot = 0,
-            EnchantCount = data.enchantCount
+            EnchantCount = hoodieData.enchantCount
           };
           player.Heros.Add(heroDb);
         }
 
-        if (DataManager.heroDict.TryGetValue(301, out HeroData herodata))
+        if (DataManager.heroDict.TryGetValue(301, out HeroData soliderData))
         {
           HeroDb heroDb = new HeroDb()
           {
             HeroDbId = DBManager.GenerateHeroDbId(),
             PlayerDbId = player.PlayerDbId,
-            TemplateId = herodata.TemplateId,
+            TemplateId = soliderData.TemplateId,
             Slot = 1,
-            EnchantCount = herodata.enchantCount
+            EnchantCount = soliderData.enchantCount
+          };
+          player.Heros.Add(heroDb);
+        }
+
+
+        if (DataManager.heroDict.TryGetValue(1201, out HeroData bearData))
+        {
+          HeroDb heroDb = new HeroDb()
+          {
+            HeroDbId = DBManager.GenerateHeroDbId(),
+            PlayerDbId = player.PlayerDbId,
+            TemplateId = bearData.TemplateId,
+            Slot = 1,
+            EnchantCount = bearData.enchantCount
           };
           player.Heros.Add(heroDb);
         }

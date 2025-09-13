@@ -129,7 +129,7 @@ namespace GameServer.Game.Room
       switch (day)
       {
         case 1:
-          AddReward(player, ERewardType.ErwardTypeGold, count: 100); // 100 골드
+          AddReward(player, ERewardType.ErwardTypeGold, count: 500); // 100 골드
           break;
 
         case 2:
@@ -137,7 +137,7 @@ namespace GameServer.Game.Room
           break;
 
         case 3:
-          AddReward(player, ERewardType.ErwardTypeObject, itemTemplateId: 10001, count: 1); // 특정 아이템 1개
+          AddReward(player, ERewardType.ErwardTypeObject, itemTemplateId: 20000, count: 1); // 특정 아이템 1개
           break;
 
         case 4:
@@ -149,11 +149,11 @@ namespace GameServer.Game.Room
           break;
 
         case 6:
-          AddReward(player, ERewardType.ErwardTypeObject, itemTemplateId: 10020, count: 1); // 특정 아이템 2개
+          AddReward(player, ERewardType.ErwardTypeObject, itemTemplateId: 20000, count: 1); // 특정 아이템 2개
           break;
 
         case 7:
-          AddReward(player, ERewardType.ErwardTypeObjects, objectIds: new List<int> { 10003, 10004, 10005 }); // 다양한 아이템 1개씩
+          AddReward(player, ERewardType.ErwardTypeObjects, itemTemplateId: 20001 , count:1); // 다양한 아이템 1개씩
           break;
       }
     }

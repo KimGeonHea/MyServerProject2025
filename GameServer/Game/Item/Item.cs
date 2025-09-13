@@ -181,13 +181,10 @@ namespace Server.Game
     {
       if (IsInInventory() == false)
         return;
-
       Player owner = inventory.Owner;
       if (owner == null)
         return;
-
       EItemSlotType equipSlotType = GetEquipSlotType();
-
       // 0. 같은 부위에 이미 장착 아이템이 있다면 일단 벗는다.
       if (inventory.EquippedItems.TryGetValue(equipSlotType, out Item prev))
       {
@@ -196,16 +193,12 @@ namespace Server.Game
 
         prev.UnEquip(inventory);
       }
-
       // 1. 인벤토리에서 제거.
       inventory.InventoryItems.Remove(ItemDbId);
-
       // 2. 장착 아이템에 추가.
       inventory.EquippedItems[equipSlotType] = this;
-
       // 3. 슬롯 갱신.
       ItemSlotType = equipSlotType;
-
       // 4. DB에 Noti. 
       DBManager.EquipItemNoti(owner, this);
 

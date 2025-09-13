@@ -171,6 +171,13 @@ namespace Server.Game
     {
       return InventoryItems.Count >= InventoryCapacity;
     }
+
+    public bool IsInventoryFull(int count)
+    {
+      return InventoryItems.Count + count >= InventoryCapacity;
+    }
+
+
     public void AddCount(long itemDbId, int count, bool sendToClient = false, bool dbNoti = true)
     {
       Item item = GetItemByDbId(itemDbId);

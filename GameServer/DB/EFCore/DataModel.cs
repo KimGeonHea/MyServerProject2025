@@ -13,13 +13,10 @@ namespace Server.Game
   {
     [DatabaseGenerated(DatabaseGeneratedOption.None)]
     public int PlayerDbId { get; set; }
-
-    public long AccountDbId { get; set; } 
-
+    public long AccountDbId { get; set; }  //나중에 AUTH작업을 위해
     [Required]
     [MaxLength(50)]
     public string PlayerName { get; set; }
-
     public DateTime CreateDate { get; set; } = DateTime.UtcNow;
     public DateTime LastEnergyGivenTime { get; set; } = DateTime.UtcNow;
     public DateTime LastDailyRewardTime { get; set; } = DateTime.MinValue;
@@ -86,7 +83,6 @@ namespace Server.Game
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
     public DateTime LastAcquiredAtUtc { get; set; } = DateTime.UtcNow; // 드롭/구매/우편/스택때만 갱신
     public DateTime SeenAcquiredUtc { get; set; } = DateTime.MinValue; // “봤다”로 처리한 최신 획득분 시각
-
 
   }
 

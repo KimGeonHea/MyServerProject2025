@@ -32,10 +32,10 @@ namespace GameServer.Game
   };
 
     // RNG (멀티스레드면 lock 사용)
-    private static readonly Random _rng = new();
-    private static readonly object _rngLock = new();
+    private static readonly Random random = new();
+    private static readonly object _rock = new();
 
-    // 등급별 풀을 한 곳에서 관리 (가독성↑)
+    // 등급별 풀을 한 곳에서 관리
     private static readonly Dictionary<EItemGrade, List<ItemData>> _pool = new()
   {
     { EItemGrade.Common,    new List<ItemData>() },
@@ -86,7 +86,10 @@ namespace GameServer.Game
         if (list.Count == 0) continue;
 
         int idx;
-        lock (_rngLock) idx = _rng.Next(list.Count); // 균등
+        lock (_rock)
+        {
+          idx = random.Next(list.Count);
+        }
         picked = list[idx];
         return true;
       }
@@ -145,18 +148,23 @@ namespace GameServer.Game
       }
 
       // 모든 등급이 비어있으면 안전장치 (실제로는 OpenOnce가 false 반환)
-      if (total <= 0) return EItemGrade.Common;
+      if (total <= 0) 
+        return EItemGrade.Common;
 
       // 2) 0 <= r < total
       int r;
-      lock (_rngLock) r = _rng.Next(total);
+      lock (_rock)
+      {
+        r = random.Next(total);
+      }
 
       // 3) 누적합으로 구간 찾기
       int acc = 0;
       foreach (var c in candidates)
       {
         acc += c.weight;
-        if (r < acc) return c.grade;
+        if (r < acc) 
+          return c.grade;
       }
       return candidates[^1].grade; // 이론상 도달 X, 안전장치
     }
@@ -172,7 +180,10 @@ namespace GameServer.Game
       if (list.Count == 0) return null;
 
       int idx;
-      lock (_rngLock) idx = _rng.Next(list.Count);
+      lock (_rock)
+      {
+        idx = random.Next(list.Count);
+      }
       return list[idx];
     }
 
