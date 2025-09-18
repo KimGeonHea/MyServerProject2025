@@ -30,7 +30,6 @@ namespace Server.Game
 
     readonly Dictionary<int/*TemplteId */ , int /*pityCount*/> pityChaBox = new();
 
-    // --- 초기화: DB → 메모리 적재 ---
     public void Init(PlayerDb playerDb)
     {
       pityChaBox.Clear();

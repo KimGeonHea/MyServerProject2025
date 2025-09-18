@@ -20,16 +20,13 @@ namespace Server.Data
     public string IconImage;
     public string PrefabName;
     public int MaxHp;
-    public int HpRegen;
     public int AttackDamage;
     public int Defence;
-    public float AtkSpeed;
-    public int MoveSpeed;
+    public float MoveSpeed;
     public float CriRate;
-    public float CriDamage;
-    public float staminaRegenSpeed;
-    public int maxStamina;
-    public int enchantCount;
+    public int SkillDamage;
+    public float StaminaRegenSpeed;
+    public int EnchantCount;
   }
 
 

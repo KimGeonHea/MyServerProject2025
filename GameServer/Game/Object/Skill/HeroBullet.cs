@@ -24,11 +24,11 @@ namespace GameServer.Game
     //public float Speed { get; set; } = heroSkillData.Speed;
     private int damage;
     private float bulletSpeed;
-    private float bulletRange = 10;
+    private float bulletRange;
     private Vector3 startPosition;
     private float heroRadius = 0.3f;
 
-    public void OnSpawned()
+    public virtual void OnSpawned()
     {
       Owner = null;
       ObjectID = 0;
@@ -38,7 +38,7 @@ namespace GameServer.Game
       bulletSpeed = 0;
     }
 
-    public void OnDespawned()
+    public virtual void OnDespawned()
     {
       
     }

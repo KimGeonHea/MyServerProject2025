@@ -25,5 +25,6 @@ namespace GameServer.Utils
     public const int INVENTORY_CAPACITY_CONSUMGOLD = 100; // 인벤토리 확장시 소모 골드
     public const int INVENTORY_UP_CAPACITY = 6; // 증감 
     public const int INVENTORY_MAXCAPACITY = 200; //최대
+    public const int ENERGY_MAX = 60; //최대 에너지
   }
 }

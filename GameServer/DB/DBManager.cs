@@ -236,7 +236,7 @@ namespace Server.Game
             PlayerDbId = player.PlayerDbId,
             TemplateId = hoodieData.TemplateId,
             Slot = 0,
-            EnchantCount = hoodieData.enchantCount
+            EnchantCount = hoodieData.EnchantCount
           };
           player.Heros.Add(heroDb);
         }
@@ -249,7 +249,7 @@ namespace Server.Game
             PlayerDbId = player.PlayerDbId,
             TemplateId = soliderData.TemplateId,
             Slot = 1,
-            EnchantCount = soliderData.enchantCount
+            EnchantCount = soliderData.EnchantCount
           };
           player.Heros.Add(heroDb);
         }
@@ -263,7 +263,7 @@ namespace Server.Game
             PlayerDbId = player.PlayerDbId,
             TemplateId = bearData.TemplateId,
             Slot = 1,
-            EnchantCount = bearData.enchantCount
+            EnchantCount = bearData.EnchantCount
           };
           player.Heros.Add(heroDb);
         }
@@ -307,10 +307,10 @@ namespace Server.Game
           db.Entry(player).Collection(p => p.Items).Load();
           db.Entry(player).Collection(p => p.Gachas).Load();
 
-
+          //아침이 되면 에니지 지급//
           if (CanGiveDailyEnergy(player , nowUtc))
           {
-            int energyToGive = Math.Min(60 - player.Energy, 60);
+            int energyToGive = Math.Min(Define.ENERGY_MAX - player.Energy, Define.ENERGY_MAX);
             if (energyToGive > 0)
             {
               player.Energy += energyToGive;
@@ -348,7 +348,7 @@ namespace Server.Game
           PlayerDbId = playerDbId,
           TemplateId = herodata.TemplateId,
           Slot = Slot,
-          EnchantCount = herodata.enchantCount
+          EnchantCount = herodata.EnchantCount
         };
 
         db.Heroes.Add(heardb);
