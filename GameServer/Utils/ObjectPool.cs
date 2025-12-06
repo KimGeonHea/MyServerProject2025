@@ -17,15 +17,28 @@ namespace GameServer.Utils
   {
     private ConcurrentStack<T> _pool = new ConcurrentStack<T>();
 
+    private readonly Func<T> _factory;
+
+    // 기본 생성자 : 기존처럼 new T() 사용
+    public ObjectPool()
+    {
+      _factory = () => new T();
+    }
+
+    // 커스텀 팩토리 사용
+    public ObjectPool(Func<T> factory)
+    {
+      _factory = (factory != null) ? factory : (() => new T());
+    }
     public T Rent()
     {
       if (_pool.TryPop(out T item))
       {
-        item.OnSpawned(); // 상태 초기화
+        item.OnSpawned();
         return item;
       }
 
-      T newItem = new T();
+      T newItem = _factory();
       newItem.OnSpawned();
       return newItem;
     }

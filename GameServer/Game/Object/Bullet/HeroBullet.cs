@@ -1,7 +1,6 @@
 ﻿using GameServer.Game.Room;
 using GameServer.Utils;
 using Google.Protobuf.Protocol;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect.Configuration;
 using Server.Data;
 using System;
 using System.Collections.Generic;
@@ -9,24 +8,26 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-
 
 namespace GameServer.Game
 {
   public class HeroBullet : BaseObject , IPoolable
   {
-    public int TempleteId;
+    public int TempleteId { get => templeteId; set => templeteId = value; }
+    public int OwnerId { get; set; } = 0; // 발사체 소유자 ID
 
     public HeroSkillData heroSkillData;
-    public int OwnerId { get; set; } = 0; // 발사체 소유자 ID
     public Hero Owner { get; set; }
-    //public float Speed { get; set; } = heroSkillData.Speed;
+
+
+
+    private int templeteId;
     private int damage;
     private float bulletSpeed;
     private float bulletRange;
     private Vector3 startPosition;
-    private float heroRadius = 0.3f;
+
+    const int MAXDISTANCE = 10;
 
     public virtual void OnSpawned()
     {
@@ -36,6 +37,7 @@ namespace GameServer.Game
       MoveDir = Vector3.Zero;
       bulletRange = 0;
       bulletSpeed = 0;
+      IsAlive = true;
     }
 
     public virtual void OnDespawned()
@@ -53,12 +55,12 @@ namespace GameServer.Game
     public void Init(Hero owner, Vector3 direction, Vector3 startPos, bool isSkill = false)
     {
       Owner = owner;
-      TempleteId = owner.TemplatedId;
+      TempleteId = owner.TempleteID;
       ObjectType = EGameObjectType.Bullet;
       
 
       HeroSkillData skillData = null;
-      if (DataManager.heroSkillDict.TryGetValue(TempleteId , out skillData))
+      if (DataManager.HeroSkilldataDict.TryGetValue(TempleteId , out skillData))
       {
         heroSkillData = skillData;
       }
@@ -73,7 +75,7 @@ namespace GameServer.Game
       TempleteID = skillData.TemplateId;
       Position = startPosition;
       damage = owner.HeroData.AttackDamage; // 발사체 피해량은 소유자의 공격력으로 설정
-      Console.WriteLine(startPosition);
+      //Console.WriteLine(startPosition);
     }
 
     public override void FixedUpdate(float deltaTime)
@@ -83,9 +85,8 @@ namespace GameServer.Game
       ApplyMove(MoveDir, bulletSpeed, deltaTime);
       
       // 발사체가 범위를 벗어났는지 확인
-      if (Vector3.Distance(startPosition, Position) > 10)
+      if (Vector3.Distance(startPosition, Position) > MAXDISTANCE)
       {
-        // 범위를 벗어나면 제거
         Owner?.Room.Despawn(this);
       }      
     }
@@ -99,10 +100,7 @@ namespace GameServer.Game
       Vector3 cleanDir = new Vector3(dir.X, 0, dir.Z);
 
       if (cleanDir.LengthSquared() < 0.001f)
-      {
-        // 이동 없음, 방향 유지 (PosInfo.DirX/Y/Z 덮어쓰기 안 함)
         return;
-      }
 
       Vector3 normalizedDir = Vector3.Normalize(cleanDir);
       Vector3 delta = normalizedDir * speed * deltaTime;
@@ -132,27 +130,19 @@ namespace GameServer.Game
     }
     private void CheckCollision()
     {
-      float totalRadius = heroSkillData.Radius + heroRadius; // 피격 범위
-      totalRadius *= totalRadius;
       GameRoom room = Owner.Room as GameRoom;
 
-      foreach (var obj in room.heroes.Values)
+      foreach (var c in room.creatures.Values)
       {
-        if (obj.ObjectType != EGameObjectType.Hero)
+        if (c == null || c.ObjectID == Owner.ObjectID)
           continue;
+        
+        float dist = Vector3.Distance(c.ColliderPosition, this.Position);
+        float totalRadius = heroSkillData.Radius + c.ColliderRadius; // 각 반지름 합
 
-        if (obj == null || obj.ObjectID == Owner.ObjectID)
-          continue;
-
-        Hero target = obj;
-        float distSq = new Vector3(target.Position.X - Position.X,0,target.Position.Z - Position.Z).LengthSquared();
-        Console.WriteLine
-          ($"[Check] BulletPos={Position}, TargetPos={target.Position}, DistSq={distSq} , totalRadius = {totalRadius}");
-        if (distSq < totalRadius)
+        if (dist < totalRadius)
         {
-          // 피격 처리
-          target.OnDamaged(damage, Owner);
-          //// 총알 제거
+          c.OnDamageBasic(damage, Owner);
           Owner?.Room.Despawn(this);
           break;
         }

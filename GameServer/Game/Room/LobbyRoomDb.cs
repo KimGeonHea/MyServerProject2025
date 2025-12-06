@@ -235,7 +235,7 @@ namespace GameServer.Game.Room
 
       if (player == null || player.Room == null || player.inventory == null)
         return false;
-      if (DataManager.itemDict.TryGetValue(itemTemplateId, out ItemData itemData) == false)
+      if (DataManager.ItemDataDict.TryGetValue(itemTemplateId, out ItemData itemData) == false)
         return false;
 
       int remainingAddCount = 1;

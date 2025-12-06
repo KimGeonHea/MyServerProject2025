@@ -1,5 +1,6 @@
 ﻿using GameServer.Game;
 using GameServer.Game.Object;
+using GameServer.Game.Object.Creature;
 using GameServer.Game.Room;
 using Google.Protobuf.Protocol;
 using Server;
@@ -14,6 +15,7 @@ namespace GameServer
 {
   public class BaseObject
   {
+    public bool IsAlive = false;
     public Room Room { get; set; } = null;  
     public PositionInfo PosInfo { get => positionInfo;  set => positionInfo = value; }  
 
@@ -27,7 +29,7 @@ namespace GameServer
       set => objectInfo.ObjectId = value; 
     }
 
-    public int TempleteID 
+    public virtual int TempleteID 
     { 
       get => objectInfo.TemplateId; 
       set => objectInfo.TemplateId =value; 
@@ -54,12 +56,8 @@ namespace GameServer
 
     public virtual void FixedUpdate(float deltaTime) { }
     public virtual void Update(float deltaTime) { }
-
-
-    public virtual void ApplyMove(Vector3 dir, float speed, float deltaTime)
-    {
- 
-    }
+    public virtual void ApplyMove(Vector3 dir, float speed, float deltaTime) { }
+    //public virtual void OnDamage(DamageContext ctx) { }
 
   }
 }

@@ -11,41 +11,52 @@ namespace GameServer.Game
   {
     protected float gravity = -9.8f;
 
-    public int TempleteId;
     public HeroSkillData heroSkillData;
 
     public int OwnerId { get; set; }
     public Hero Owner { get; set; }
 
     public int damage;
- 
 
+    protected bool _exploded;
+
+    const int skillIndex = 1;
     public virtual void OnSpawned()
     {
-      ObjectID = 0;
-      Owner = null;
+      _exploded = false;
       Position = Vector3.Zero;
       MoveDir = Vector3.Zero;
-
+      IsAlive = true;
     }
 
-    public virtual void OnDespawned() { }
+    public virtual void OnDespawned() 
+    {
+      //ObjectID = 0;
+      //Owner = null;
+      //Position = Vector3.Zero;
+      //MoveDir = Vector3.Zero;
+      //heroSkillData = null;
+      //damage = 0;
+    }
 
     public virtual void Init(Hero owner, Vector3 direction, Vector3 targetPosition)
     {
       Owner = owner;
       OwnerId = owner.ObjectID;
 
-      TempleteId = owner.TemplatedId + 1;
-      if (DataManager.heroSkillDict.TryGetValue(TempleteId, out HeroSkillData data))
+      TempleteID = owner.TempleteID + skillIndex;
+      if (DataManager.HeroSkilldataDict.TryGetValue(TempleteID, out HeroSkillData data))
       {
         heroSkillData = data;
       }
+      
     }
   
 
     public override void FixedUpdate(float deltaTime)
     {
+      if(IsAlive == false)
+        return;
       base.FixedUpdate(deltaTime);
      
     }

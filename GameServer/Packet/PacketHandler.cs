@@ -28,6 +28,14 @@ class PacketHandler
     ClientSession clientSession = session as ClientSession;
     clientSession.HandleLogin(pkt);
   }
+
+  public static void C_PingHandler(PacketSession session, IMessage packet)
+  {
+    C_Ping pkt = packet as C_Ping;
+    ClientSession clientSession = session as ClientSession;
+    //clientSession.HandleLogin(pkt);
+  }
+  
   public static void C_EnterGameHandler(PacketSession session, IMessage packet)
   {
     C_EnterGame pkt = packet as C_EnterGame;
@@ -58,8 +66,8 @@ class PacketHandler
   }
   public static void C_LeaveGameHandler(PacketSession session, IMessage packet)
   {
-    var s = (ClientSession)session;
-    var p = s.player;
+    var clientSession = session as ClientSession;
+    var p = clientSession.player;
     var r = p?.Room;
     if (r?.Worker == null) return;            // 내려간 방이면 무시
 
@@ -90,47 +98,14 @@ class PacketHandler
           lb.Push(lb.CancelMatch, p);
 
           // 정책상 로비 자체도 떠나게 하려면:
-          // lb.Push(lb.Remove, p.ObjectID);
-          // p.Session.ServerState = PlayerServerState.ServerStateLogin;
+          lb.Push(lb.Remove, p.ObjectID);
+          break;
+        case SingleGameRoom single:
+          //  싱글 LeaveGame 호출
+          single.LeaveGame(p);
           break;
       }
     });
-    //C_LeaveGame pkt = packet as C_LeaveGame;
-    //ClientSession clientSession = session as ClientSession;
-    //
-    //Player player = clientSession.player;
-    //if (player == null)
-    //  return;
-    //
-    //GameRoom room = player.Room as GameRoom;
-    //if (room == null)
-    //  return;
-    //
-    //if (room?.Worker == null) return; // 내려간 방이면 무시
-    //
-    //room.Push(() =>
-    //{
-    //  room.LeaveGame(player);           // 1) 알림/연출/정리
-    //  room.Remove(player.ObjectID);     // 2) 실제 제거
-    //
-    //  // 3) 게임룸이면 로비로 보내기
-    //  if (room is GameRoom gr)
-    //  {
-    //    var lobby = RoomManager.Instance.LobbyRoom;
-    //    if (lobby?.Worker != null)
-    //      lobby.Push(lobby.EnterGame, player); // 또는 EnterLobby 래퍼
-    //
-    //    // (Remove 오버라이드에서 빈방 삭제 예약을 이미 함)
-    //  }
-    //  else if (room is LobbyRoom)
-    //  {
-    //    // 로비에서 '나가기' 정책:
-    //    // - 매칭 대기열 취소만 하고 로비에는 남겨두기, 또는
-    //    // - 진짜 로비 자체도 떠나게 할 거면 여기서 상태 전환 등
-    //    // p.Session.ServerState = PlayerServerState.ServerStateLogin;
-    //  }
-    //});
-
   }
   public static void C_ItemClickHandler(PacketSession session, IMessage packet)
   {
@@ -215,6 +190,92 @@ class PacketHandler
 
     room.Push(room.HandleUseItem, player, pkt);
   }
+
+  public static void C_EnterSingleStageHandler(PacketSession session, IMessage packet)
+  {
+    var pkt = packet as C_EnterSingleStage;
+    if (pkt == null)
+      return;
+
+    var clientSession = session as ClientSession;
+    if (clientSession == null)
+      return;
+
+    Player player = clientSession.player;
+    if (player == null)
+      return;
+
+    LobbyRoom room = player.Room as LobbyRoom;
+    if (room == null)
+      return;
+
+    room.Push(room.C_EnterSingleStage, player, pkt);
+  }
+
+  public static void C_ReportStageHandler(PacketSession session, IMessage packet)
+  {
+    var pkt = packet as C_ReportStage;
+    if (pkt == null)
+      return;
+
+    var clientSession = session as ClientSession;
+    if (clientSession == null)
+      return;
+
+    Player player = clientSession.player;
+    if (player == null)
+      return;
+
+    SingleGameRoom room = player.Room as SingleGameRoom;
+    if (room == null)
+      return;
+
+    room.Push(room.ReportStageEnd, player, pkt.StageId,pkt.IsClear);
+  }
+
+  public static void C_StagePauseHandler(PacketSession session, IMessage packet)
+  {
+    var pkt = packet as C_StagePause;
+    if (pkt == null)
+      return;
+
+    var clientSession = session as ClientSession;
+    if (clientSession == null)
+      return;
+
+    Player player = clientSession.player;
+    if (player == null)
+      return;
+
+    SingleGameRoom room = player.Room as SingleGameRoom;
+    if (room == null)
+      return;
+
+    room.Push(room.ToggleStagePause, player);
+  }
+
+  public static void C_StageReviveHandler(PacketSession session, IMessage packet)
+  {
+    var pkt = packet as C_StageRevive;
+    if (pkt == null)
+      return;
+
+    var clientSession = session as ClientSession;
+    if (clientSession == null)
+      return;
+
+    Player player = clientSession.player;
+    if (player == null)
+      return;
+
+    SingleGameRoom room = player.Room as SingleGameRoom;
+    if (room == null)
+      return;
+
+    room.Push(room.RevivePlayer, player);
+  }
+  
+
   public static void C_ChatHandler(PacketSession session, IMessage packet)
   {
     var pkt = packet as C_Chat;

@@ -8,8 +8,8 @@ namespace Server
 {
 	public class Singleton<T> where T : new()
 	{
-		static T _instance = new T();
+    private static readonly T _instance = new T();
 
-		public static T Instance { get { return _instance; } }
-	}
+    public static T Instance => _instance;
+  }
 }

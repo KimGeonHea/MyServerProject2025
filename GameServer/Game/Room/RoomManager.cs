@@ -15,12 +15,13 @@ namespace GameServer.Game.Room
   {
     readonly object _roomsLock = new();
 
-    //public static RoomManager Instance { get; } = new RoomManager();
 
     public LobbyRoom LobbyRoom = LobbyRoom.Instance;
+    public SingleGameRoom SingleRoom { get; private set; }
 
-    readonly Dictionary<int, GameRoom> _rooms = new();
-    readonly GameRoomPool _roomPool = new();
+
+    readonly Dictionary<int, GameRoom> gameRooms = new();
+    readonly GameRoomPool gameRoomPool = new();
 
     RoomWorker lobbyWorker;
     readonly List<RoomWorker> gameWorker = new();
@@ -35,10 +36,20 @@ namespace GameServer.Game.Room
       lobbyWorker = new RoomWorker(lobbyHz, "LobbyWorker");
       lobbyWorker.Add(LobbyRoom);
 
-      // 게임룸 워커 N개
+      // 2) 게임 워커들 생성
       gameWorker.Clear();
       for (int i = 0; i < gameWorkerCount; i++)
         gameWorker.Add(new RoomWorker(gameHz, $"GameWorker_{i}"));
+
+      // 3) 싱글 게임룸 생성 + 첫 번째 게임 워커에 붙이기
+      //    (StageDataDict 는 네가 DataManager 같은 데서 들고 있는 딕셔너리라고 가정)
+      SingleRoom = new SingleGameRoom();
+
+      // 최소 1개는 있다고 가정, 0개면 fallback 으로 lobbyWorker 를 사용해도 되고
+      if (gameWorker.Count > 0)
+        gameWorker[0].Add(SingleRoom);   //로비랑 분리된 쓰레드
+      else
+        lobbyWorker.Add(SingleRoom);     // 혹시 게임 워커가 0개인 특수 케이스
     }
 
     RoomWorker PickGameWorker()
@@ -48,7 +59,8 @@ namespace GameServer.Game.Room
         .OrderBy(w => w.RoomCount)
         .FirstOrDefault(w => w.RoomCount < RoomsPerWorker);
 
-      if (ok != null) return ok;
+      if (ok != null) 
+        return ok;
 
       // 2) 전부 가득이면 일단 가장 적은 곳(임시) — 필요하면 동적 증설 로직 추가
       return gameWorker.OrderBy(w => w.RoomCount).First();
@@ -61,12 +73,12 @@ namespace GameServer.Game.Room
     {
       if (p1?.Room != null || p2?.Room != null) return;
 
-      GameRoom room = _roomPool.Rent();
+      GameRoom room = gameRoomPool.Rent();
 
       lock (_roomsLock)
       {
         room.GameRoomId = _roomId++;
-        _rooms.Add(room.GameRoomId, room);
+        gameRooms.Add(room.GameRoomId, room);
       }
 
       var worker = PickGameWorker();
@@ -82,7 +94,7 @@ namespace GameServer.Game.Room
       GameRoom room;
       lock (_roomsLock)
       {
-        if (!_rooms.TryGetValue(roomId, out room))
+        if (!gameRooms.TryGetValue(roomId, out room))
           return false;
       }
 
@@ -101,10 +113,10 @@ namespace GameServer.Game.Room
         room.Worker = null;
 
         // 매니저 딕셔너리 제거
-        lock (_roomsLock) _rooms.Remove(roomId);
+        lock (_roomsLock) gameRooms.Remove(roomId);
 
         // 풀 반납
-        _roomPool.Return(room);
+        gameRoomPool.Return(room);
       });
 
       return true; // “삭제 예약” 성공
@@ -112,91 +124,14 @@ namespace GameServer.Game.Room
     public GameRoom Find(int roomId)
     {
       lock (_roomsLock)
-        return _rooms.TryGetValue(roomId, out var r) ? r : null;
+        return gameRooms.TryGetValue(roomId, out var r) ? r : null;
     }
 
     public List<GameRoom> GetRooms()
     {
       lock (_roomsLock)
-        return _rooms.Values.ToList();
+        return gameRooms.Values.ToList();
     }
-
-
-    //public static RoomManager Instance { get; } = new RoomManager();
-    //
-    //public LobbyRoom LobbyRoom = LobbyRoom.Instance;
-    //
-    //Dictionary<int, GameRoom> _rooms = new Dictionary<int, GameRoom>();
-    //GameRoomPool _roomPool = new GameRoomPool();
-    //
-    //
-    //int _roomId = 1;
-    //
-    //public void Update(float deltaTime)
-    //{
-    //  Instance.Flush();
-    //  LobbyRoom.Update(deltaTime);
-    //
-    //  foreach (GameRoom room in _rooms.Values)
-    //  {
-    //    room.Update(deltaTime);  // GameRoom도 deltaTime 받음
-    //  }
-    //  foreach (GameRoom room in _rooms.Values)
-    //  {
-    //    room.FixedUpdate(deltaTime);  // GameRoom도 deltaTime 받음
-    //  }
-    //
-    //}
-    //
-    //public void Create1vs1Room(Player p1, Player p2)
-    //{
-    //
-    //  if (p1.Room != null || p2.Room != null)
-    //    return;
-    //
-    //  GameRoom room = _roomPool.Rent();
-    //  room.GameRoomId = _roomId++;
-    //  _rooms.Add(room.GameRoomId, room);
-    //
-    //  room.Push(room.Init, 1); // 원하는 맵 ID
-    //
-    //  room.Push(room.EnterGame, p1);
-    //  room.Push(room.EnterGame, p2);
-    //
-    //  p1.Room = room;
-    //  p2.Room = room;
-    //}
-    //
-    //public GameRoom Add(int mapTemplateId)
-    //{
-    //  GameRoom gameRoom = new GameRoom();
-    //  gameRoom.Push(gameRoom.Init, mapTemplateId);
-    //
-    //  gameRoom.GameRoomId = _roomId;
-    //  _rooms.Add(_roomId, gameRoom);
-    //  _roomId++;
-    //
-    //  return gameRoom;
-    //}
-    //
-    //public bool Remove(int roomId)
-    //{
-    //  return _rooms.Remove(roomId);
-    //}
-    //
-    //public GameRoom Find(int roomId)
-    //{
-    //  GameRoom room = null;
-    //  if (_rooms.TryGetValue(roomId, out room))
-    //    return room;
-    //
-    //  return null;
-    //}
-    //
-    //public List<GameRoom> GetRooms()
-    //{
-    //  return _rooms.Values.ToList();
-    //}
 
   }
 }

@@ -1,4 +1,5 @@
-﻿using Google.Protobuf;
+﻿using GameServer.Game.Object.Creature;
+using Google.Protobuf;
 using Google.Protobuf.Protocol;
 using Server.Game;
 using System;
@@ -10,6 +11,13 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace GameServer.Game.Room
 {
+  public interface IDamageRoom
+  {
+    void BroadcastDamage(BaseObject target, DamageContext ctx, int finalDamage);
+
+    void OnCreatureDead(BaseObject obj,DamageContext ctx ,int curHp);
+  }
+
   public class Room : JobSerializer
   {
     public int GameRoomId { get; set; }
@@ -24,14 +32,14 @@ namespace GameServer.Game.Room
 
     // 추가: 방 활성 여부(내려가는 중 Push 방지)
     public bool IsActive { get; private set; } = true;
-
+    
     // 편의: 스케줄러에 매달려 있고 활성 상태인가?
 
     public bool IsAlive => (Worker != null) && IsActive;
 
     public virtual void Update(float deltaTime)
     {
-      // 스케줄러 루프에서 주기 호출 → Push된 작업 실행
+      // 스케줄러 루프에서 주기 호출  Push된 작업 실행
       Flush();
     }
 
@@ -97,14 +105,15 @@ namespace GameServer.Game.Room
     }
 
 
-
-    // (호환용) 클라 통지만 — 실제 제거는 Remove에서
-    // 기본값: 자발적 퇴장으로 가정
     public virtual void LeaveGame(Player player)
     {
       if (player == null) 
         return;
-      NotifyLeave(player, ELeaveReason.Voluntary, goLobby: true);
+      // 1) 나간다고 통보
+      NotifyLeave(player, ELeaveReason.Voluntary, goLobby: false);
+
+      // 2) 이 Room에서 제거
+      Remove(player.ObjectID);
     }
 
 
@@ -133,7 +142,6 @@ namespace GameServer.Game.Room
         p.Session?.Send(packet);
     }
 
-    // ── 선택 유틸(있으면 편함) ─────────────────────────────────────────────
     public virtual void BroadcastExcept(int exceptObjectId, IMessage packet)
     {
       if (packet == null) return;
@@ -150,7 +158,6 @@ namespace GameServer.Game.Room
       if (players.TryGetValue(objectId, out var p))
         p.Session?.Send(packet);
     }
-    // ─────────────────────────────────────────────────────────────────────
 
     // 빈방/서버 내려갈 때 호출(남은 유저 통지 + 비움)
     public virtual void Close()
@@ -165,8 +172,8 @@ namespace GameServer.Game.Room
       }
       players.Clear();
 
-      foreach (var o in baseObjects.Values)
-        o.Room = null;
+      foreach (var obj in baseObjects.Values)
+        obj.Room = null;
       baseObjects.Clear();
     }
 

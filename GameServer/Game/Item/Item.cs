@@ -77,7 +77,7 @@ namespace Server.Game
     public Item Init(ItemDb itemdb)
     {
       int templateId = itemdb.TemplateId;
-      if (DataManager.itemDict.TryGetValue(templateId, out ItemData itemData) == false)
+      if (DataManager.ItemDataDict.TryGetValue(templateId, out ItemData itemData) == false)
         return null;
 
       this.itemData = itemData;
@@ -247,16 +247,18 @@ namespace Server.Game
       if (player == null)
         return;
 
-      // 지금 (획득시각 > 본 시각)
-      bool isNewNow = LastAcquiredAtUtc > SeenAcquiredUtc;
-      if (!isNewNow)
-        return; // 이미 본 상태면 아무 것도 안 함
+      // 1. 지금 진짜 새로 먹은 아이템인가?
+      if (LastAcquiredAtUtc <= SeenAcquiredUtc)
+        return;
 
-      // 메모리 선적용
+      // 2. 메모리 선적용
       SeenAcquiredUtc = LastAcquiredAtUtc;
-      IsNew = false; // 로컬 UI 즉시 OFF
+      IsNew = false;
 
+      // 3. 클라에 바로 반영
       SendApplyNewSeen(player);
+
+      // 4. DB 반영 (검사는 여기서만)
       DBManager.ItemSeenNoti(player, this);
     }
 
@@ -269,7 +271,7 @@ namespace Server.Game
     public static ItemInfo MakeItemInfo(ItemDb itemdb)
     {
       int templateId = itemdb.TemplateId;
-      if (DataManager.itemDict.TryGetValue(templateId, out ItemData itemData) == false)
+      if (DataManager.ItemDataDict.TryGetValue(templateId, out ItemData itemData) == false)
         return null;
 
       ItemInfo itemInfo = new ItemInfo()
@@ -288,7 +290,7 @@ namespace Server.Game
     public static Item MakeItem(ItemDb itemDb)
     {
       int templateId = itemDb.TemplateId;
-      if (DataManager.itemDict.TryGetValue(templateId, out ItemData itemData) == false)
+      if (DataManager.ItemDataDict.TryGetValue(templateId, out ItemData itemData) == false)
         return null;
 
       Item item = new Item();

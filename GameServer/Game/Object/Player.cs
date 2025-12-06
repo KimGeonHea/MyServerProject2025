@@ -62,6 +62,23 @@ namespace GameServer
       set { playerStatInfo.Level = value; }
     }
 
+    public string Stagename
+    {
+      get { return playerStatInfo.StageName; }
+      set { playerStatInfo.StageName = value; }
+    }
+    public int CurStageOrderIndex
+    {
+      get
+      {
+        if (!string.IsNullOrEmpty(Stagename) &&
+            DataManager.StageDataDict.TryGetValue(Stagename, out StageData lastCleared))
+          return lastCleared.OrderIndex;
+
+        return -1;
+      }
+    }
+
 
     public PlayerStatInfo playerStatInfo { get; set; } = new PlayerStatInfo();
     public ClientSession Session { get; set; }
@@ -90,6 +107,39 @@ namespace GameServer
       player.Init(playerDb);
 
       return  player;
+    }
+
+    public void Wallet(int gold = 0, int dia = 0, int energy = 0, int exp = 0, bool sendToClient = true)
+    {
+      // 1) 메모리 값 변경
+      if (gold != 0)
+        Gold += gold;
+
+      if (dia != 0)
+        Diamond += dia;
+
+      if (energy != 0)
+        Energy += energy;
+
+      if (exp != 0)
+      {
+        Exp += exp;
+        // TODO: 여기서 레벨업 체크/처리 넣으면 됨
+        // CheckLevelUp();
+      }
+
+      // 2) 클라이언트로 월렛 상태 패킷 전송
+      if (!sendToClient || Session == null)
+        return;
+
+      S_Wallet walletPkt = new S_Wallet();
+      walletPkt.Wallet.Gold = this.Gold;
+      walletPkt.Wallet.Diamond = this.Diamond;
+      walletPkt.Wallet.Energy = this.Energy;
+      walletPkt.Wallet.Exp = this.Exp;
+      walletPkt.Wallet.Level = this.Level;  // 필요하면
+      
+      Session.Send(walletPkt);
     }
 
     public void Init(PlayerDb playerDb)

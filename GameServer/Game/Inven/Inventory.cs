@@ -47,7 +47,7 @@ namespace Server.Game
       {
         if (_inventoryCapacity == value) 
           return;   // 변경 없으면 스킵
-        _inventoryCapacity = value;                // 1) 내 값 저장
+        _inventoryCapacity = value;  
 
         if (Owner != null)
         {
@@ -64,7 +64,7 @@ namespace Server.Game
     public Dictionary<EItemSlotType, Item> EquippedItems { get; } = new Dictionary<EItemSlotType, Item>();
     public Dictionary<long, Item> InventoryItems { get; } = new Dictionary<long, Item>();
 
-    public ToatalEquipData toatalEquipData = new ToatalEquipData();
+    public ToatalEquipData toTalEquipData = new ToatalEquipData();
     public void Init(PlayerDb playerDb)
     {
       InventoryCapacity = playerDb.InventoryCapacity;
@@ -108,6 +108,7 @@ namespace Server.Game
     }
 
     public void Remove(Item item, bool sendToClient = false)
+
     {
       AllItems.Remove(item.ItemDbId);
 
@@ -140,16 +141,16 @@ namespace Server.Game
     }
     public ToatalEquipData GetTotalDataEquipItems()
     {
-      toatalEquipData.totalAttack = EquippedItems.Values.Sum(e => e.itemData.Damage);
-      toatalEquipData.totalDeffence = EquippedItems.Values.Sum(e => e.itemData.Def);
+      toTalEquipData.totalAttack = EquippedItems.Values.Sum(e => e.itemData.Damage);
+      toTalEquipData.totalDeffence = EquippedItems.Values.Sum(e => e.itemData.Def);
       //toatalEquipData.totalCriDamage = EquippedItems.Values.Sum(e => (int)e.itemData.CriDamage);
-      toatalEquipData.totalHealth =  EquippedItems.Values.Sum(e => e.itemData.Health);
-      toatalEquipData.totalCriRate = EquippedItems.Values.Sum(e => e.itemData.CriRate);
-      toatalEquipData.totalSkillDamage = EquippedItems.Values.Sum(e => e.itemData.SkillDamage);
-      toatalEquipData.totalSpregen = EquippedItems.Values.Sum(e => e.itemData.CriRate);
-      toatalEquipData.totalMoveSpeed = EquippedItems.Values.Sum(e => e.itemData.MoveSpeed);
+      toTalEquipData.totalHealth =  EquippedItems.Values.Sum(e => e.itemData.Health);
+      toTalEquipData.totalCriRate = EquippedItems.Values.Sum(e => e.itemData.CriRate);
+      toTalEquipData.totalSkillDamage = EquippedItems.Values.Sum(e => e.itemData.SkillDamage);
+      toTalEquipData.totalSpregen = EquippedItems.Values.Sum(e => e.itemData.CriRate);
+      toTalEquipData.totalMoveSpeed = EquippedItems.Values.Sum(e => e.itemData.MoveSpeed);
 
-      return toatalEquipData;
+      return toTalEquipData;
     }
 
     public List<Item> GetItems() 

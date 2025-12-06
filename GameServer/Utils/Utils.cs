@@ -1,11 +1,12 @@
-﻿using System;
-using System.Linq;
+﻿using Google.Protobuf.Protocol;
+using Server.Data;
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Text;
-using System.Net.Sockets;
+using System.Linq;
 using System.Net;
-using Google.Protobuf.Protocol;
+using System.Net.Sockets;
+using System.Text;
 
 namespace Server
 {
@@ -43,7 +44,31 @@ namespace Server
 
       return EItemSlotType.None;
     }
+    public static StageData FindNextStage(StageData cur)
+    {
+      if (cur == null)
+        return null;
 
+      // 같은 타입 (싱글/엘리트/보스 등) 기준으로만 넘기고 싶으면 필터 추가
+      int curOrder = cur.OrderIndex;
+
+      StageData next = null;
+
+      foreach (var kv in DataManager.StageDataDict) // stageDict : string -> StageData 라고 가정
+      {
+        StageData s = kv.Value;
+        if (s.EStageType != cur.EStageType)  // 타입 다르면 스킵하고 싶으면
+          continue;
+
+        if (s.OrderIndex > curOrder)
+        {
+          if (next == null || s.OrderIndex < next.OrderIndex)
+            next = s;
+        }
+      }
+
+      return next; // 없으면 null (마지막 스테이지)
+    }
 
 
   }

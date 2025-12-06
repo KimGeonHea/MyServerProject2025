@@ -54,38 +54,42 @@ namespace Server.Game
   {
     public static DBManager Instance { get; } = new DBManager();
 
-    public static ConcurrentDictionary<int/*heroDbId*/, DBJobQueue> _jobQueueDic = new ConcurrentDictionary<int, DBJobQueue>();
-    public static ConcurrentQueue<int/*heroDbId*/> _executeQueue = new ConcurrentQueue<int>();
+    public static ConcurrentDictionary<int/*playerDbId*/, DBJobQueue> _jobQueueDic = new ConcurrentDictionary<int, DBJobQueue>();
+    public static ConcurrentQueue<int/*playerDbId*/> _executeQueue = new ConcurrentQueue<int>();
 
     #region JobQueue
 
-    public static void Push(int heroDbId, Action action)
+    public static void Push(int playerDbId, Action action)
     {
-      if (_jobQueueDic.ContainsKey(heroDbId) == false)
+      if (_jobQueueDic.ContainsKey(playerDbId) == false)
       {
-        _jobQueueDic.TryAdd(heroDbId, new DBJobQueue());
-        _executeQueue.Enqueue(heroDbId);
+        _jobQueueDic.TryAdd(playerDbId, new DBJobQueue());
+        _executeQueue.Enqueue(playerDbId);
       }
 
-      _jobQueueDic[heroDbId].Enqueue(() => { action.Invoke(); FinishProcessing(heroDbId); });
+      _jobQueueDic[playerDbId].Enqueue(() => 
+      {
+        action.Invoke();
+        FinishProcessing(playerDbId); 
+      });
     }
 
-    public static Action TryPop(int heroDbId)
+    public static Action TryPop(int playerDbId)
     {
-      if (_jobQueueDic.TryGetValue(heroDbId, out DBJobQueue jobQueue) == false)
+      if (_jobQueueDic.TryGetValue(playerDbId, out DBJobQueue jobQueue) == false)
         return null;
 
       return jobQueue.TryDequeue();
     }
 
-    public static void Clear(int heroDbId)
+    public static void Clear(int playerDbId)
     {
-      _jobQueueDic.TryRemove(heroDbId, out DBJobQueue jobQueue);
+      _jobQueueDic.TryRemove(playerDbId, out DBJobQueue jobQueue);
     }
 
-    private static void FinishProcessing(int heroDbId)
+    private static void FinishProcessing(int playerDbId)
     {
-      if (_jobQueueDic.TryGetValue(heroDbId, out DBJobQueue jobQueue) == false)
+      if (_jobQueueDic.TryGetValue(playerDbId, out DBJobQueue jobQueue) == false)
         return;
 
       jobQueue.FinishProcessing();
@@ -159,17 +163,17 @@ namespace Server.Game
 
       while (true)
       {
-        if (_executeQueue.TryDequeue(out int heroDbId) == false)
+        if (_executeQueue.TryDequeue(out int playerDbId) == false)
           continue;
 
-        if (ContainsKey(heroDbId) == false)
+        if (ContainsKey(playerDbId) == false)
           continue;
 
-        Action action = TryPop(heroDbId);
+        Action action = TryPop(playerDbId);
         if (action != null)
           action.Invoke();
 
-        _executeQueue.Enqueue(heroDbId);
+        _executeQueue.Enqueue(playerDbId);
 
         Thread.Sleep(0);
       }
@@ -228,7 +232,7 @@ namespace Server.Game
         db.SaveChanges();
 
 
-        if(DataManager.heroDict.TryGetValue(101, out HeroData hoodieData))
+        if(DataManager.HeroDataDict.TryGetValue(101, out HeroData hoodieData))
         {
           HeroDb heroDb = new HeroDb()
           {
@@ -241,7 +245,7 @@ namespace Server.Game
           player.Heros.Add(heroDb);
         }
 
-        if (DataManager.heroDict.TryGetValue(301, out HeroData soliderData))
+        if (DataManager.HeroDataDict.TryGetValue(301, out HeroData soliderData))
         {
           HeroDb heroDb = new HeroDb()
           {
@@ -255,7 +259,7 @@ namespace Server.Game
         }
 
 
-        if (DataManager.heroDict.TryGetValue(1201, out HeroData bearData))
+        if (DataManager.HeroDataDict.TryGetValue(1201, out HeroData bearData))
         {
           HeroDb heroDb = new HeroDb()
           {
@@ -275,8 +279,8 @@ namespace Server.Game
           TemplateId = 10001,
           Count = 1,
           EquipSlot = EItemSlotType.Inventory,
-          LastAcquiredAtUtc = DateTime.UtcNow,                              // 새로 들어옴!
-          SeenAcquiredUtc = DateTime.MinValue,                // 아직 안 봤다 → 레드닷 ON
+          LastAcquiredAtUtc = DateTime.UtcNow,                              // 새로 들어옴
+          SeenAcquiredUtc = DateTime.MinValue,                // 아직안봄
         };
         player.Items.Add(itemDb);
 

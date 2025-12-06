@@ -40,28 +40,31 @@ namespace GameServer.Game
 
     }
 
-    public override void Init(Hero owner, Vector3 direction, Vector3 targetPosition)
+    public override void Init(Hero owner, Vector3 direction, Vector3 targetPos)
     {
-      base.Init(owner, direction, targetPosition);
+      base.Init(owner, direction, targetPos);
 
       ObjectType = EGameObjectType.Skill;
-      TempleteID = owner.TemplatedId + 1;
-      damage = owner.HeroData.AttackDamage;
+      TempleteID = owner.TempleteID + 1;
+      damage = owner.SkillDamage;
 
+      // 시작 / 타겟 위치 (클라랑 비슷하게)
       startPosition = new Vector3(owner.Position.X, 0.5f, owner.Position.Z);
-      this.targetPosition = new Vector3(targetPosition.X, 0.5f, targetPosition.Z); // Y 동일
+      targetPosition = new Vector3(targetPos.X, 0.5f, targetPos.Z);
 
       Position = startPosition;
 
-      float maxDistance = 8f;
-      float distance = (this.targetPosition - startPosition).Length();
-      float t = Math.Clamp(distance / maxDistance, 0f, 1f); // 보간 계수 (0~1)
+      //  클라랑 동일하게 고정 값 사용
+      float flightTime = 0.8f;   // 클라 CalculateVelocity(..., 0.8f)
+      float yMultiplier = 1.2f;   // 클라 CalculateVelocity(..., 1.2f, ...)
 
-      float minTime = 0.3f;
-      float maxTime = 1.2f;
+      // 원하면 여기서 한 번 디버그 찍어봐도 좋음
+      // Console.WriteLine($"[HoodieSkill.Init] start={startPosition}, target={targetPosition}, time={flightTime}");
 
-      float flightTime = minTime + (maxTime - minTime) * t; // 직접 보간
-      CalculateVelocity(startPosition, this.targetPosition, 1.3f, flightTime);
+      CalculateVelocity(startPosition, targetPosition, yMultiplier, flightTime);
+
+      // lifeTime은 적당히 여유 있게 (클라는 5f)
+      lifeTime = 5f;
     }
 
 
@@ -142,8 +145,9 @@ namespace GameServer.Game
     }
     private void CheckCollision()
     {
-      GameRoom room = Owner.Room as GameRoom;
-      float radiusSq = heroSkillData.Radius * 0.3f;
+      GameRoom room = Room as GameRoom;
+
+      float radiusSq = heroSkillData.Radius * 2f;
 
       foreach (var obj in room.heroes.Values)
       {
@@ -153,7 +157,7 @@ namespace GameServer.Game
         float distSq = (obj.Position - Position).LengthSquared();
         if (distSq <= radiusSq)
         {
-          obj.OnDamaged(damage, Owner);
+          //obj.OnDamaged(damage, Owner);
           Explode();
           break;
         }
@@ -163,8 +167,23 @@ namespace GameServer.Game
     private void Explode()
     {
 
-      GameRoom room = Owner.Room as GameRoom;
-      float radiusSq = heroSkillData.Radius * heroSkillData.Radius;
+      if (_exploded)
+        return;
+      _exploded = true;
+
+      // 풀에 돌아간 이후거나, 이미 방에서 제거된 경우 방어
+      if (Owner == null || Room == null)
+        return;
+
+      GameRoom room = Room as GameRoom;
+      if (room == null)
+        return;
+
+      // heroSkillData 가 예상과 다르게 null 이어도 죽지 않게 기본값 사용
+      float range = 3.0f;
+      if (heroSkillData != null && heroSkillData.Range > 0)
+        range = heroSkillData.Range;
+
 
       foreach (var obj in room.heroes.Values)
       {
@@ -172,13 +191,11 @@ namespace GameServer.Game
           continue;
 
         float distSq = (obj.Position - Position).LengthSquared();
-        if (distSq < radiusSq)
-        {
-          obj.OnDamaged(damage, Owner);
-        }
+        if (distSq < range)
+          obj.OnDamageBasic(damage, Owner);
       }
 
-      Owner?.Room.Despawn(this);
+      room.Despawn(this);
     }
   }
 }

@@ -26,6 +26,8 @@ namespace Server
 
 		public PlayerServerState ServerState = PlayerServerState.ServerStateLogin;
 
+    public DateTime LastPacketUtc { get; private set; } = DateTime.UtcNow;
+
     object _lock = new object();
 
 		#region Network
@@ -53,15 +55,15 @@ namespace Server
 
 		public override void OnRecvPacket(ArraySegment<byte> buffer)
 		{
-			PacketManager.Instance.OnRecvPacket(this, buffer);
+      LastPacketUtc = DateTime.UtcNow;
+
+      PacketManager.Instance.OnRecvPacket(this, buffer);
 		}
 
 		public override void OnDisconnected(EndPoint endPoint)
 		{
       var p = player;
       var r = p?.Room;
-
-
       if (r is LobbyRoom lobby)
       {
         lobby.Push(() =>
@@ -77,8 +79,7 @@ namespace Server
       {
         gr.Push(() =>
         {
-          // (a) 자기 자신에게 S_LeaveGame 보낼 필요 없음(세션 없음)
-          //     => 곧바로 Room에서 제거
+          // 곧바로 Room에서 제거
           gr.Remove(p.ObjectID);
           p.Room = null;
 
@@ -87,10 +88,23 @@ namespace Server
             RoomManager.Instance.Remove(gr.GameRoomId);
         });
       }
-
+      else if (r is SingleGameRoom single)
+      {
+        single.Push(() =>
+        {
+          single.HandleDisconnect(p);
+          p.Room = null;
+        });
+      }
       SessionManager.Instance.Remove(this);
 
-			Console.WriteLine($"OnDisconnected : {endPoint}");
+      if (p != null && p.PlayerDbId > 0)
+      {
+        DBManager.Push(p.PlayerDbId, () => DBManager.Clear(p.PlayerDbId));
+      }
+
+
+      Console.WriteLine($"OnDisconnected : {endPoint}");
 		}
     public override void OnSend(int numOfBytes)
 		{

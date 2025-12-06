@@ -16,19 +16,27 @@ namespace Server.Data
 	public class DataManager
 	{
     //public static Dictionary<int, Data.ItemData> ItemDict { get; private set; } = new Dictionary<int, ItemData>();
-    public static Dictionary<int, HeroData> heroDict { get; private set; } = new Dictionary<int, HeroData>();
-    public static Dictionary<int, ItemData> itemDict { get; private set; } = new Dictionary<int, ItemData>();
+    public static Dictionary<int, HeroData> HeroDataDict { get; private set; } = new Dictionary<int, HeroData>();
+    public static Dictionary<int, ItemData> ItemDataDict { get; private set; } = new Dictionary<int, ItemData>();
 
-    public static Dictionary<int, HeroSkillData> heroSkillDict { get; private set; } = new Dictionary<int, HeroSkillData>();
+    public static Dictionary<int, HeroSkillData> HeroSkilldataDict { get; private set; } = new Dictionary<int, HeroSkillData>();
+    public static Dictionary<string, StageData> StageDataDict { get; private set; } = new Dictionary<string, StageData>();
+
+    public static Dictionary<int, MonsterData> MonsterDataDict { get; private set; } = new Dictionary<int, MonsterData>();
+
+    public static Dictionary<string, StageRewardDataGroup> StageRewardDict = new Dictionary<string, StageRewardDataGroup>();
     public static List<Obstacle> Obstacles { get; private set; } = new List<Obstacle>();
     public static Grid ObstacleGrid { get; private set; } = new(2.0f); // 셀 크기 설정
     public static void LoadData()
 		{
-      heroDict = LoadJson<HeroLoader, int, HeroData>("HeroData").MakeDict();
-      itemDict = LoadJson<ItemLoader, int, ItemData>("ItemData").MakeDict();
-      heroSkillDict = LoadJson<HeroSkillLoader, int, HeroSkillData>("HeroSkillData").MakeDict();
+      HeroDataDict = LoadJson<HeroLoader, int, HeroData>("HeroData").MakeDict();
+      ItemDataDict = LoadJson<ItemLoader, int, ItemData>("ItemData").MakeDict();
+      HeroSkilldataDict = LoadJson<HeroSkillLoader, int, HeroSkillData>("HeroSkillData").MakeDict();
+      MonsterDataDict = LoadJson<MonsterServerDataLoader,int, MonsterData>("MonsterData").MakeDict();
+      StageDataDict = LoadJson<StageLoader, string, StageData>("StageData").MakeDict();
+      StageRewardDict = LoadJson<RewardDataLoader, string, StageRewardDataGroup>("StageRewardData").MakeDict();
 
-      ItemBox.BuildPools(DataManager.itemDict.Values);
+      ItemBox.BuildPools(DataManager.ItemDataDict.Values);
       //LoadMap();
       LoadMapGrid();
 

@@ -142,8 +142,6 @@ namespace GameServer.Game.Room
 
       player.Session?.Send(res);
     }
-
-    // 프로젝트에 맞게 구현
     private void SendToast(Player player, string msg) 
     {
       /* ... */ 

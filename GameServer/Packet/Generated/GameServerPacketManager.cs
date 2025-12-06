@@ -8,55 +8,71 @@ public enum MsgId
 {
 	S_Connected = 1,
 	C_Test = 2,
-	S_LoginReq = 3,
-	C_LoginRes = 4,
-	S_AddHero = 5,
-	C_EnterGame = 6,
-	S_EnterGame = 7,
-	C_EnterQeue = 8,
-	C_LeaveGame = 9,
-	S_LeaveGame = 10,
-	S_AddItem = 11,
-	S_ChangeItemSlot = 12,
-	C_EquipItem = 13,
-	C_UnEquipItem = 14,
-	C_UseItem = 15,
-	S_UseItemBox = 16,
-	C_ItemClick = 17,
-	S_ItemClick = 18,
-	C_Chat = 19,
-	S_Chat = 20,
-	C_ChatList = 21,
-	S_ChatList = 22,
-	C_InvenCapaticy = 23,
-	S_InvenCapaticy = 24,
-	C_ItemList = 25,
-	S_ItemList = 26,
-	C_DeleteItem = 27,
-	S_DeleteItem = 28,
-	C_HeroList = 29,
-	S_HeroList = 30,
-	C_SelectHero = 31,
-	S_SelctHero = 32,
-	C_HeroMove = 33,
-	S_HeroMove = 34,
-	C_HeroShot = 35,
-	S_HeroShot = 36,
-	C_HeroSkill = 37,
-	S_HeroSkill = 38,
-	S_HeroShotMove = 39,
-	S_HeroSkillMove = 40,
-	S_HeroChangeHp = 41,
-	S_Despawn = 42,
-	C_EnterMultyGame = 43,
-	S_EnterMultyGame = 44,
-	C_MatchCancel = 45,
-	C_DailyReward = 46,
-	S_DailyReward = 47,
-	C_DailyRewardOpen = 48,
-	S_DailyRewardOpen = 49,
-	C_RewardItem = 50,
-	S_RewardItem = 51,
+	C_Ping = 3,
+	S_Ping = 4,
+	S_LoginReq = 5,
+	C_LoginRes = 6,
+	S_AddHero = 7,
+	C_EnterGame = 8,
+	S_EnterGame = 9,
+	C_EnterQeue = 10,
+	C_LeaveGame = 11,
+	S_LeaveGame = 12,
+	S_AddItem = 13,
+	S_ChangeItemSlot = 14,
+	C_EquipItem = 15,
+	C_UnEquipItem = 16,
+	C_UseItem = 17,
+	S_UseItemBox = 18,
+	C_EnterSingleStage = 19,
+	S_EnterSingleStage = 20,
+	C_ReportStage = 21,
+	S_ReportStage = 22,
+	S_Wallet = 23,
+	C_StagePause = 24,
+	S_StagePause = 25,
+	C_StageRevive = 26,
+	S_StageRevive = 27,
+	C_ItemClick = 28,
+	S_ItemClick = 29,
+	C_Chat = 30,
+	S_Chat = 31,
+	C_ChatList = 32,
+	S_ChatList = 33,
+	C_InvenCapaticy = 34,
+	S_InvenCapaticy = 35,
+	C_ItemList = 36,
+	S_ItemList = 37,
+	C_DeleteItem = 38,
+	S_DeleteItem = 39,
+	C_HeroList = 40,
+	S_HeroList = 41,
+	C_SelectHero = 42,
+	S_SelctHero = 43,
+	C_HeroMove = 44,
+	S_HeroMove = 45,
+	C_HeroShot = 46,
+	S_HeroShot = 47,
+	C_HeroSkill = 48,
+	S_HeroSkill = 49,
+	S_HeroShotMove = 50,
+	S_HeroSkillMove = 51,
+	S_HeroChangeHp = 52,
+	S_Despawn = 53,
+	C_EnterMultyGame = 54,
+	S_EnterMultyGame = 55,
+	C_MatchCancel = 56,
+	C_DailyReward = 57,
+	S_SpawnMonster = 58,
+	S_MonsterState = 59,
+	S_MonsterMove = 60,
+	S_MonsterHp = 61,
+	S_MonsterDie = 62,
+	S_DailyReward = 63,
+	C_DailyRewardOpen = 64,
+	S_DailyRewardOpen = 65,
+	C_RewardItem = 66,
+	S_RewardItem = 67,
 }
 
 class PacketManager
@@ -80,6 +96,8 @@ class PacketManager
 	{		
 		_onRecv.Add((ushort)MsgId.C_Test, MakePacket<C_Test>);
 		_handler.Add((ushort)MsgId.C_Test, PacketHandler.C_TestHandler);		
+		_onRecv.Add((ushort)MsgId.C_Ping, MakePacket<C_Ping>);
+		_handler.Add((ushort)MsgId.C_Ping, PacketHandler.C_PingHandler);		
 		_onRecv.Add((ushort)MsgId.C_LoginRes, MakePacket<C_LoginRes>);
 		_handler.Add((ushort)MsgId.C_LoginRes, PacketHandler.C_LoginResHandler);		
 		_onRecv.Add((ushort)MsgId.C_EnterGame, MakePacket<C_EnterGame>);
@@ -94,6 +112,14 @@ class PacketManager
 		_handler.Add((ushort)MsgId.C_UnEquipItem, PacketHandler.C_UnEquipItemHandler);		
 		_onRecv.Add((ushort)MsgId.C_UseItem, MakePacket<C_UseItem>);
 		_handler.Add((ushort)MsgId.C_UseItem, PacketHandler.C_UseItemHandler);		
+		_onRecv.Add((ushort)MsgId.C_EnterSingleStage, MakePacket<C_EnterSingleStage>);
+		_handler.Add((ushort)MsgId.C_EnterSingleStage, PacketHandler.C_EnterSingleStageHandler);		
+		_onRecv.Add((ushort)MsgId.C_ReportStage, MakePacket<C_ReportStage>);
+		_handler.Add((ushort)MsgId.C_ReportStage, PacketHandler.C_ReportStageHandler);		
+		_onRecv.Add((ushort)MsgId.C_StagePause, MakePacket<C_StagePause>);
+		_handler.Add((ushort)MsgId.C_StagePause, PacketHandler.C_StagePauseHandler);		
+		_onRecv.Add((ushort)MsgId.C_StageRevive, MakePacket<C_StageRevive>);
+		_handler.Add((ushort)MsgId.C_StageRevive, PacketHandler.C_StageReviveHandler);		
 		_onRecv.Add((ushort)MsgId.C_ItemClick, MakePacket<C_ItemClick>);
 		_handler.Add((ushort)MsgId.C_ItemClick, PacketHandler.C_ItemClickHandler);		
 		_onRecv.Add((ushort)MsgId.C_Chat, MakePacket<C_Chat>);

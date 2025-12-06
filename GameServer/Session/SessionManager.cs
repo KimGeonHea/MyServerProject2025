@@ -12,6 +12,9 @@ namespace Server
 		Dictionary<int, ClientSession> _sessions = new Dictionary<int, ClientSession>();
 		object _lock = new object();
 
+		const int PingTimeoutSec = 600; // 예: 60초
+
+
 		public List<ClientSession> GetSessions()
 		{
 			List<ClientSession> sessions = new List<ClientSession>();
@@ -21,7 +24,7 @@ namespace Server
 				sessions = _sessions.Values.ToList();
 			}
 
-			return sessions; 
+			return sessions;
 		}
 
 		public ClientSession Generate()
@@ -56,5 +59,50 @@ namespace Server
 				_sessions.Remove(session.SessionId);
 			}
 		}
-	}
+
+    public void StartPingChecker()
+    {
+      Thread t = new Thread(PingLoop);
+      t.IsBackground = true;
+      t.Name = "PingChecker";
+      t.Start();
+    }
+
+    void PingLoop()
+    {
+      List<ClientSession> toDisconnect = new List<ClientSession>();
+      while (true)
+      {
+        DateTime now = DateTime.UtcNow;
+        toDisconnect.Clear();
+
+        lock (_lock)
+        {
+          foreach (ClientSession s in _sessions.Values)
+          {
+            double idleSec = (now - s.LastPacketUtc).TotalSeconds;
+            if (idleSec > PingTimeoutSec)
+            {
+              toDisconnect.Add(s);
+            }
+          }
+        }
+
+        // 잠금 밖에서 실제 소켓 끊기
+        foreach (ClientSession s in toDisconnect)
+        {
+          try
+          {
+            s.Disconnect(); 
+          }
+          catch (Exception e)
+          {
+            Console.WriteLine($"PingLoop Disconnect Error: {e}");
+          }
+        }
+
+        Thread.Sleep(1000); // 1초마다 체크
+      }
+    }
+  }
 }

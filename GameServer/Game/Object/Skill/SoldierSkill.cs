@@ -35,18 +35,18 @@ namespace GameServer.Game
       base.Init(owner, start, targetPosition);
 
       ObjectType = EGameObjectType.Skill;
-      TempleteID = owner.TemplatedId + 1;
+      TempleteID = Owner.TempleteID + 1;
       damage = Owner.SkillDamage;
 
       startPosition = new Vector3(Owner.Position.X, start.Y, Owner.Position.Z);
 
       this.targetPosition = targetPosition;
 
-      HeroSkillData skillData = null;
-      if (DataManager.heroSkillDict.TryGetValue(TempleteId, out skillData))
-      {
-        heroSkillData = skillData;
-      }
+      //HeroSkillData skillData = null;
+      //if (DataManager.HeroSkilldataDict.TryGetValue(TempleteID, out skillData))
+      //{
+      //  heroSkillData = skillData;
+      //}
 
 
       CalculateVelocity_FromHeight(startPosition, this.targetPosition, yMultiplier, lifeTime);
@@ -77,6 +77,8 @@ namespace GameServer.Game
 
     public override void FixedUpdate(float deltaTime)
     {
+      base.FixedUpdate(deltaTime);
+
       elapsed += deltaTime;
 
       if (elapsed > lifeTime)
@@ -101,15 +103,16 @@ namespace GameServer.Game
       }
 
       Position = nextPos;
-      CheckCollision();
+      //CheckCollision();
     }
 
     private void CheckCollision()
     {
-      GameRoom room = Owner.Room as GameRoom;
+      GameRoom room = Room as GameRoom;
+
       float radiusSq = 3 * 0.3f;
 
-      foreach (var obj in room.heroes.Values)
+      foreach (var obj in room.creatures.Values)
       {
         if (obj == null || obj.ObjectID == Owner.ObjectID)
           continue;
@@ -117,7 +120,11 @@ namespace GameServer.Game
         float distSq = (obj.Position - Position).LengthSquared();
         if (distSq <= radiusSq)
         {
-          obj.OnDamaged(damage, Owner);
+          //Vector3 dir = Vector3.Normalize(obj.Position - Position);
+          //
+          ////obj.OnDamageKnockback(damage, Owner, 2.5f);
+          //obj.OnDamageKnockback(damage, dir , 2.5f , Owner);
+          ////obj.OnDamageKnockback(damage, Owner);
           Explode();
           break;
         }
@@ -126,23 +133,38 @@ namespace GameServer.Game
 
     private void Explode()
     {
+      if (_exploded)
+        return;
+      _exploded = true;
+      IsAlive = true;
+      // 풀에 돌아간 이후거나, 이미 방에서 제거된 경우 방어
+      if (Owner == null || Room == null)
+        return;
 
-      GameRoom room = Owner.Room as GameRoom;
-      float radiusSq = 3 * 3;//heroSkillData.Radius * heroSkillData.Radius;
+      GameRoom room = Room as GameRoom;
+      if (room == null)
+        return;
 
-      foreach (var obj in room.heroes.Values)
+      // heroSkillData 가 예상과 다르게 null 이어도 죽지 않게 기본값 사용
+      float range = 10.0f;
+      if (heroSkillData != null && heroSkillData.Range > 0)
+        range = heroSkillData.Range;
+
+
+      foreach (var obj in room.creatures.Values)
       {
         if (obj == null || obj.ObjectID == Owner.ObjectID)
           continue;
 
         float distSq = (obj.Position - Position).LengthSquared();
-        if (distSq < radiusSq)
+        if (distSq < range)
         {
-          obj.OnDamaged(damage, Owner);
+          Vector3 dir = Vector3.Normalize(obj.Position - Position);
+          obj.OnDamageKnockback(damage, dir, 3.5f , Owner);
         }
       }
 
-      Owner?.Room.Despawn(this);
+      room.Despawn(this);
     }
 
 

@@ -86,6 +86,88 @@ namespace GameServer.Game.Room
     //}
 
 
+    public void C_EnterSingleStage(Player player, C_EnterSingleStage pkt)
+    {
+      if (player == null)
+        return;
+
+      string targetStageId = pkt.StageId;
+      var stageDict = DataManager.StageDataDict;
+
+      // 1) 스테이지 존재 여부
+      if (!stageDict.TryGetValue(targetStageId, out StageData targetStage))
+      {
+        // 없는 스테이지
+        S_EnterSingleStage fail = new S_EnterSingleStage
+        {
+          StageId = targetStageId,
+          EStageResultType = EStageResultType.SingleInvalidStage,
+          Energy = player.Energy
+        };
+        player.Session.Send(fail);
+        return;
+      }
+
+      // 2) 진행도 체크
+      int clearedOrder = 0;
+
+      // player.Stagename = 마지막으로 클리어한 스테이지 ID (예: "1-2")
+      if (!string.IsNullOrEmpty(player.Stagename) &&
+          stageDict.TryGetValue(player.Stagename, out StageData lastCleared))
+      {
+        clearedOrder = lastCleared.OrderIndex;
+      }
+
+      // 규칙:
+      // - target.Order <= clearedOrder      : 재도전 허용
+      // - target.Order == clearedOrder + 1  : 바로 다음 스테이지 입장 허용
+      // - target.Order >= clearedOrder + 2  : 잠금
+      if (targetStage.OrderIndex > clearedOrder + 1)
+      {
+        S_EnterSingleStage fail = new S_EnterSingleStage
+        {
+          StageId = targetStageId,
+          EStageResultType = EStageResultType.SingleStageLocked,
+          Energy = player.Energy
+        };
+        player.Session.Send(fail);
+        return;
+      }
+
+      // 3) 에너지 체크
+      if (player.Energy < targetStage.ConsumeEnergy)
+      {
+        S_EnterSingleStage fail = new S_EnterSingleStage
+        {
+          StageId = targetStageId,
+          EStageResultType = EStageResultType.SingleNotEnoughEnergy,
+          Energy = player.Energy
+        };
+        player.Session.Send(fail);
+        return;
+      }
+
+      if (player.Room is LobbyRoom lobby)
+      {
+        // 로비 워커에서 처리
+        lobby.Push(() =>
+        {
+          // (1) 로비에서 제거
+          lobby.Remove(player.ObjectID);
+
+          // (2) 싱글 룸 워커에게 일을 던진다
+          RoomManager.Instance.SingleRoom.Push(() =>
+          {     // 4) 실제 입장
+
+            RoomManager.Instance.SingleRoom.EnterSingleStage(player, targetStageId);
+          });
+        });
+      }
+      else
+      {
+        // 만약 이미 다른 룸(게임중?)이면 규칙에 맞게 처리 (그냥 무시하거나 에러)
+      }
+    }
     public Player Find(int objectId)
     {
       Player player = null;

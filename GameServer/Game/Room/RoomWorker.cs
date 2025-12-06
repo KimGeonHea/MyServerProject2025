@@ -59,7 +59,8 @@ namespace GameServer.Game.Room
         float dt = (float)(1.0 / _hz);
 
         // Flush 포함: Room.Update 안에서 Flush() 호출한다고 가정
-        foreach (var r in rooms) r.Update(dt);
+        foreach (var r in rooms)
+          r.Update(dt);
 
         // GameRoom만 고정틱
         foreach (var r in rooms)
@@ -67,7 +68,8 @@ namespace GameServer.Game.Room
 
         long elapsed = sw.ElapsedMilliseconds - frameStart;
         int sleep = (int)Math.Max(0, targetMs - elapsed);
-        if (sleep > 0) Thread.Sleep(sleep);
+        if (sleep > 0) 
+          Thread.Sleep(sleep);
       }
     }
   }

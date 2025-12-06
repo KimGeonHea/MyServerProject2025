@@ -22,20 +22,30 @@ namespace GameServer.Game
     public float totalSpregen;
   }
 
-  public partial class Hero : BaseObject
+  public partial class Hero : Creature
   {
+    public TotalStatData TotalStatData
+    {
+      get { return totalStatData; }
+      set { totalStatData = value; }
+    }
+
     public int OwnerDbid { get; set; }
     public EHeroUpperState EHeroUpperState { get; set; } // 상위 상태 (예: 일반, 스킬 사용 중 등)
     public EHeroLowerState EHeroLowerState { get; set; } // 하위 상태 (예: 이동, 공격 등)
+    public ETeamType TeamType { get; set; } = ETeamType.None;
     TotalStatData totalStatData { get; set; } = new TotalStatData();
     HeroStatInfo heroStatInfo { get; set; } = new HeroStatInfo();
 
     HeroData heroData { get; set; } = new HeroData();
-
-    public int TemplatedId
+    public override int TempleteID
     {
-      get { return heroStatInfo.TemplateId; }
-      set { heroStatInfo.TemplateId = value; }
+      get => heroStatInfo.TemplateId;
+      set
+      {
+        heroStatInfo.TemplateId = value;  // 스탯/데이터용
+        ObjectInfo.TemplateId = value;  // 패킷용
+      }
     }
 
     public int Slot
@@ -62,32 +72,50 @@ namespace GameServer.Game
       set { heroStatInfo = value; }
     }
 
+    //public int CurHp
+    //{
+    //  get => totalStatData.totalHealth;
+    //  set => totalStatData.totalHealth = value;
+    //}
+    //public int MaxHp
+    //{
+    //  get => totalStatData.totalHealth;
+    //  set => totalStatData.totalHealth = value;
+    //}
 
-    //totalStatData를 통해 영웅의 총 스탯을 관리합니다.
+    //public int AttackDamage
+    //{
+    //  get => totalStatData.totalAttack;
+    //  set => totalStatData.totalAttack = value;
+    //} 
+    //
+    //public int Defence
+    //{
+    //  get => totalStatData.totalDeffence;
+    //  set => totalStatData.totalDeffence = value;
+    //} 
+    //
+    //public float MoveSpeed
+    //{
+    //  get => totalStatData.totalMoveSpeed;
+    //  set => totalStatData.totalMoveSpeed = value;
+    //}
+    //public int TempleteID
+    //{
+    //  get { return heroStatInfo.TemplateId; }
+    //  set { heroStatInfo.TemplateId = value; }
+    //}
 
-    public int CurHp
+
+    public readonly float ShotStaminaCost = 10f;
+    public float CurStamina { get; set; }
+    public float MaxStamina { get; set; } = 100.0f;
+
+
+    public float StaminaRegenSpeed
     {
-      get => totalStatData.totalHealth;
-      set => totalStatData.totalHealth = value;
+      get => baseSprejenSpeed + totalStatData.totalSpregen;
     }
-    public int MaxHp
-    {
-      get => totalStatData.totalHealth;
-      set => totalStatData.totalHealth = value;
-    }
-
-    public int AttackDamage
-    {
-      get => totalStatData.totalAttack;
-      set => totalStatData.totalAttack = value;
-    } 
-
-    public int Defence
-    {
-      get => totalStatData.totalDeffence;
-      set => totalStatData.totalDeffence = value;
-    } 
-
 
     public float CriRate
     {
@@ -99,29 +127,38 @@ namespace GameServer.Game
       get => totalStatData.totalSkillDamage; // 스킬 데미지는 기본 공격력으로 설정
       set => totalStatData.totalSkillDamage = value; // 스킬 데미지를 변경할 수 있음
     }
+    
+    public override Vector3 ColliderPosition
+    {
+      get => new Vector3(Position.X, Position.Y + 0.8f, Position.Z);
+    }
+    //public override float ColliderRadius { get; set; } = 0.8f;
 
-
+    float baseSprejenSpeed = 5.0f;
 
     public virtual void Init(HeroDb herodb)
     {
-      TemplatedId = herodb.TemplateId;
-      TempleteID = herodb.TemplateId; // BaseObject의 템플릿 아이디 설정 
+      TempleteID = herodb.TemplateId;   
       OwnerDbid = herodb.PlayerDbId ?? throw new InvalidOperationException("PlayerDbId is null");
       HeroDbId = herodb.HeroDbId;
       Slot = herodb.Slot;
       ObjectType = EGameObjectType.Hero;
 
       HeroData herodata = null;
-      DataManager.heroDict.TryGetValue(herodb.TemplateId, out herodata);
-      if (herodata != null)
+
+      if(DataManager.HeroDataDict.TryGetValue(herodb.TemplateId, out herodata))
       {
         heroData = herodata;
+      }
+      else
+      {
+        Console.WriteLine($"Hero Init Failed! TempleteID : {herodb.TemplateId} not found in HeroDataDict");
       }
     }
 
     public void SetTotalData(ToatalEquipData toatalEquipData)
     {
-      if (HeroData != null)
+      if (HeroData != null || toatalEquipData != null)
       {
         totalStatData.totalAttack = HeroData.AttackDamage+ toatalEquipData.totalAttack;
         totalStatData.totalDeffence = HeroData.Defence + toatalEquipData.totalDeffence; 
@@ -133,18 +170,24 @@ namespace GameServer.Game
 
         CurHp = totalStatData.totalHealth; // 현재 HP는 최대 HP로 초기화
         MaxHp = totalStatData.totalHealth; // 최대 HP 설정
+
+        AttackDamage = totalStatData.totalAttack;
+        Defence = totalStatData.totalDeffence;
+        MoveSpeed = totalStatData.totalMoveSpeed;
+
+        CurStamina = MaxStamina;
       }
     } 
     public static Hero MakeHero(HeroDb heardb)
     {
       Hero hero =new Hero();
-      hero.TemplatedId = heardb.TemplateId;
+      hero.TempleteID = heardb.TemplateId;
       hero.OwnerDbid = heardb.PlayerDbId ?? throw new InvalidOperationException("PlayerDbId is null");
       hero.HeroDbId = heardb.HeroDbId;
       hero.Slot = heardb.Slot;
 
       HeroData herodata = null;
-      DataManager.heroDict.TryGetValue(hero.TemplatedId, out herodata);
+      DataManager.HeroDataDict.TryGetValue(hero.TempleteID, out herodata);
       if (herodata != null)
       {
         hero.heroData = herodata;
@@ -156,7 +199,7 @@ namespace GameServer.Game
     public static HeroStatInfo MakieHeroStatInfo(HeroDb herodb)
     {
       int templateId = herodb.TemplateId;
-      if (DataManager.heroDict.TryGetValue(templateId, out HeroData itemData) == false)
+      if (DataManager.HeroDataDict.TryGetValue(templateId, out HeroData itemData) == false)
         return null;
 
       HeroStatInfo heroStatInfo = new HeroStatInfo()
