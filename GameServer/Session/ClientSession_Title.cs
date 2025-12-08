@@ -1,6 +1,7 @@
 ﻿using GameServer;
 using GameServer.Game;
 using GameServer.Game.Room;
+using GameServer.Utils;
 using Google.Protobuf;
 using Google.Protobuf.Protocol;
 using Microsoft.EntityFrameworkCore;
@@ -41,7 +42,8 @@ namespace Server
         if (playerdb != null)
         {
           player = Player.MakePlayer(this , playerdb);
-          //player.Init(playerdb);
+          //TODO ACCOUNT쪽은 나중에 인중후 사용할 예정
+          //지금은 임시로 넣어둠
           AccountDbId = playerdb.AccountDbId;
 
           S_LoginReq loginReq = new S_LoginReq()
@@ -59,8 +61,9 @@ namespace Server
               StageName = playerdb.StageName,
               PlayerName =playerdb.PlayerName,
               InventoryCapacity = playerdb.InventoryCapacity,
-              LastEnergyGivenTime = playerdb.LastEnergyGivenTime.ToString(),
-              LastDailyRewardTime = playerdb.LastDailyRewardTime.ToString(),
+              TimeZoneId = playerdb.TimeZoneId,
+              LastEnergyGivenTime = TzUtil.DateTimeToStringUtc(playerdb.LastEnergyGivenTime),
+              LastDailyRewardTime = TzUtil.DateTimeToStringUtc(playerdb.LastDailyRewardTime),
               DailyweekReward = WeeaklyRewardFlagTostring(playerdb.WeeklyRewardFlags),
             },
           };
@@ -93,13 +96,6 @@ namespace Server
 
           room.Push(room.EnterGame, player);
 
-
-          //멀티쓰레드방식 TODO AWS 사용시 성능을 어느정도로 해야할지//
-          //LobbyJobManager.Push(player.PlayerDbId, () =>
-          //{
-          //  room.EnterGmae(player);
-          //});
-
         }
         else
         {
@@ -109,7 +105,8 @@ namespace Server
             //플레이어 세션 연결
             //플레이어 이니셜 라이즈 (디비 연결)
             player = Player.MakePlayer(this, createPlayerDb);
-            //player.Init(createPlayerDb);
+            //TODO ACCOUNT쪽은 나중에 인중후 사용할 예정
+            //지금은 임시로 넣어둠
             AccountDbId = player.PlayerDbId;
 
             S_LoginReq loginReq = new S_LoginReq()
@@ -126,8 +123,9 @@ namespace Server
                 StageName = createPlayerDb.StageName,
                 PlayerName = createPlayerDb.PlayerName,
                 InventoryCapacity = createPlayerDb.InventoryCapacity,
-                LastEnergyGivenTime = createPlayerDb.LastEnergyGivenTime.ToString(),
-                LastDailyRewardTime = createPlayerDb.LastDailyRewardTime.ToString(),
+                TimeZoneId = createPlayerDb.TimeZoneId, 
+                LastEnergyGivenTime = TzUtil.DateTimeToStringUtc(createPlayerDb.LastEnergyGivenTime),
+                LastDailyRewardTime = TzUtil.DateTimeToStringUtc(createPlayerDb.LastDailyRewardTime),
                 DailyweekReward = WeeaklyRewardFlagTostring(createPlayerDb.WeeklyRewardFlags),
               }
             };
@@ -152,12 +150,6 @@ namespace Server
               return;
 
             room.Push(room.EnterGame, player);
-
-            //멀티쓰레드방식//
-            //LobbyJobManager.Push(player.PlayerDbId, () =>
-            //{
-            //  room.EnterGmae(player);
-            //});
           }
         }
       }

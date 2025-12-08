@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Server;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,6 +15,7 @@ namespace GameServer.Game.Room
 
     readonly int _hz;
     volatile bool _running = true;
+    public bool DoSessionTimeoutCheck { get; set; } = false;
 
     public RoomWorker(int hz, string name)
     {
@@ -49,6 +51,10 @@ namespace GameServer.Game.Room
       var sw = System.Diagnostics.Stopwatch.StartNew();
       double targetMs = 1000.0 / _hz;
 
+      // 타임아웃 체크용 누적 타이머
+      double timeoutAccMs = 0.0;
+      const double timeoutIntervalMs = 1000.0; // 1초마다 한 번
+
       while (_running)
       {
         long frameStart = sw.ElapsedMilliseconds;
@@ -58,17 +64,28 @@ namespace GameServer.Game.Room
 
         float dt = (float)(1.0 / _hz);
 
-        // Flush 포함: Room.Update 안에서 Flush() 호출한다고 가정
+        // 1) Room.Update
         foreach (var r in rooms)
           r.Update(dt);
 
-        // GameRoom만 고정틱
+        // 2) GameRoom만 FixedUpdate
         foreach (var r in rooms)
           if (r is GameRoom gr) gr.FixedUpdate(dt);
 
         long elapsed = sw.ElapsedMilliseconds - frameStart;
+
+        // 실제 지난 시간만큼 누적
+        timeoutAccMs += elapsed;
+
+        // 3) 세션 타임아웃 체크
+        if (DoSessionTimeoutCheck && timeoutAccMs >= timeoutIntervalMs)
+        {
+          timeoutAccMs = 0.0;
+          SessionManager.Instance.CheckTimeout();
+        }
+
         int sleep = (int)Math.Max(0, targetMs - elapsed);
-        if (sleep > 0) 
+        if (sleep > 0)
           Thread.Sleep(sleep);
       }
     }

@@ -302,7 +302,7 @@ namespace GameServer.Game.Room
 
       NotifyLeave(player, reason, goLobby: true);
 
-      Remove(player.ObjectID);
+      PlayerRomve(player.ObjectID);
 
       var lobbyRoom = RoomManager.Instance.LobbyRoom;
       lobbyRoom?.Push(lobbyRoom.EnterGame, player);
@@ -450,7 +450,7 @@ namespace GameServer.Game.Room
       }
 
       // 방에서 제거
-      Remove(player.ObjectID);
+      PlayerRomve(player.ObjectID);
       player.Room = null;
     }
   }

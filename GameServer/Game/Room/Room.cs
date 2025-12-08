@@ -1,5 +1,4 @@
-﻿using GameServer.Game.Object.Creature;
-using Google.Protobuf;
+﻿using Google.Protobuf;
 using Google.Protobuf.Protocol;
 using Server.Game;
 using System;
@@ -93,7 +92,8 @@ namespace GameServer.Game.Room
     // 최소 프로토콜 헬퍼 2개 (본인 통지 / 모두 제거)
     protected void NotifyLeave(Player me, ELeaveReason reason, bool goLobby = true)
     {
-      if (me?.Session == null) return;
+      if (me?.Session == null) 
+        return;
 
       var pkt = new S_LeaveGame
       {
@@ -113,13 +113,13 @@ namespace GameServer.Game.Room
       NotifyLeave(player, ELeaveReason.Voluntary, goLobby: false);
 
       // 2) 이 Room에서 제거
-      Remove(player.ObjectID);
+      PlayerRomve(player.ObjectID);
     }
 
 
 
     // 실제 플레이어 제거(+링크 해제) — TryGetValue로 안전 처리
-    public virtual void Remove(int objectId)
+    public virtual void PlayerRomve(int objectId)
     {
       if (!players.TryGetValue(objectId, out Player player))
         return;

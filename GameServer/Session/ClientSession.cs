@@ -71,7 +71,7 @@ namespace Server
           // (a) 매칭 대기열/상태에서 제거
           lobby.CancelMatch(p);
           // (b) 로비 players 목록에서 제거
-          lobby.Remove(p.ObjectID);
+          lobby.PlayerRomve(p.ObjectID);
           p.Room = null;
         });
       }
@@ -80,7 +80,7 @@ namespace Server
         gr.Push(() =>
         {
           // 곧바로 Room에서 제거
-          gr.Remove(p.ObjectID);
+          gr.PlayerRomve(p.ObjectID);
           p.Room = null;
 
           // (b) 룸이 비었으면 룸 삭제 예약

@@ -84,8 +84,6 @@ namespace Server
 			
 			Console.WriteLine("Listening...");
 
-      SessionManager.Instance.StartPingChecker();
-
       const int DbThreadCount = 1;
       DBManager.LaunchDBThreads(DbThreadCount);
       DBManager.InitDbIds();

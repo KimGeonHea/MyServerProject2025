@@ -1,6 +1,5 @@
 ﻿using GameServer.Game;
 using GameServer.Game.Object;
-using GameServer.Game.Object.Creature;
 using GameServer.Game.Room;
 using Google.Protobuf.Protocol;
 using Server;

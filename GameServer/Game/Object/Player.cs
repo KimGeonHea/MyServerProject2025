@@ -1,18 +1,19 @@
-﻿using Server;
+﻿using GameServer;
+using GameServer.Game;
+using GameServer.Game.Room;
+using GameServer.Utils;
+using Google.Protobuf.Protocol;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Server;
+using Server.Data;
+using Server.Game;
+using ServerCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
-using GameServer.Game;
-using GameServer;
-using Server.Game;
-using Google.Protobuf.Protocol;
-using System.Numerics;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using GameServer.Game.Room;
-using ServerCore;
-using Server.Data;
 
 namespace GameServer
 {
@@ -201,7 +202,7 @@ namespace GameServer
 
     }
 
-    public void ApplyAddOrDeleteGoldDiaEnergy(ERewardType type , int count)
+    public void ApplayGodAndDiaDailyReward(ERewardType type , int count)
     {
       S_DailyReward packet = new S_DailyReward();
       switch (type)
@@ -214,12 +215,11 @@ namespace GameServer
           packet.Diamond = count;
           break;
       }
-      
-      packet.DailyRewardOpen = WeeklyRewardFlagToString(WeeklyRewardFlags);
-      packet.LastDailyRewardTime = LastDailyRewardTime.ToString();
 
-      Console.WriteLine(Convert.ToString(WeeklyRewardFlags, 2).PadLeft(7, '0'));
+      packet.WeeklyRewardFlags = WeeklyRewardFlagToString(WeeklyRewardFlags);
+      packet.LastDailyRewardTime = TzUtil.DateTimeToStringUtc(LastDailyRewardTime);
 
+      Console.WriteLine($"WeeklyRewardFlags == { WeeklyRewardFlags}");
       Session?.Send(packet);
     }
 
@@ -229,13 +229,6 @@ namespace GameServer
       for (int i = 0; i < 7; i++)
         s[i] = ((flags >> i) & 1) == 1 ? '1' : '0'; // 비트0이 s[0](왼쪽)
       return new string(s);
-    }
-    public string WeeaklyRewardFlagTostring(int flags)
-    {
-      char[] result = new char[7];
-      for (int i = 0; i < 7; i++)
-        result[i] = (flags & (1 << (6 - i))) != 0 ? '1' : '0';  // 6-i로 순서 변경
-      return new string(result);
     }
     private void OnLevelup()
     {

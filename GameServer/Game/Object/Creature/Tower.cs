@@ -5,13 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GameServer.Game.Object.Creature
+namespace GameServer.Game
 {
-  public class Tower : BaseObject
+  public class Tower : Creature
   {
-    public int MaxHp { get; private set; }
-    public int Hp { get; private set; }
-
     public Hero owner { get; private set; }
     public ETeamType teamType { get; private set; }
 
@@ -23,22 +20,7 @@ namespace GameServer.Game.Object.Creature
       this.owner = owner;
 
       MaxHp = maxHp;
-      Hp = maxHp;
+      CurHp = maxHp;
     }
-
-    public void OnDamaged(int damage)
-    {
-      Hp = Math.Max(0, Hp - damage);
-
-      // 타워 HP 브로드캐스트
-      //Room?.BroadcastTowerHp(this);
-      //
-      //if (Hp <= 0)
-      //{
-      //  Room?.OnTowerDestroyed(this);
-      //}
-    }
-
-    public bool IsDead() => Hp <= 0;
   }
 }

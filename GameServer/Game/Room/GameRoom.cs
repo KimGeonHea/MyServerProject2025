@@ -1,5 +1,4 @@
 ﻿using GameServer.Game.Object;
-using GameServer.Game.Object.Creature;
 using GameServer.Utils;
 using Google.Protobuf;
 using Google.Protobuf.Protocol;
@@ -340,7 +339,7 @@ namespace GameServer.Game.Room
       NotifyLeave(player, ELeaveReason.Voluntary, goLobby: true);
 
       // 2) 플레이어 제거 (총알/스킬/영웅 정리 포함)
-      Remove(player.ObjectID);  // GameRoom.Remove 오버라이드가 잘 정리해줌
+      PlayerRomve(player.ObjectID);  // GameRoom.Remove 오버라이드가 잘 정리해줌
 
       // 3) 로비로 보내기
       var lobby = RoomManager.Instance.LobbyRoom;
@@ -413,7 +412,7 @@ namespace GameServer.Game.Room
       base.Despawn(obj); // baseObject에서 제거
     }
 
-    public override void Remove(int objectId)
+    public override void PlayerRomve(int objectId)
     {
       if (!players.TryGetValue(objectId, out var player) || player == null)
         return;
@@ -460,7 +459,7 @@ namespace GameServer.Game.Room
       heroes.Remove(objectId);
 
       // 4) 마지막으로 플레이어 제거(링크 해제 등은 base.Remove에서 처리)
-      base.Remove(objectId);
+      base.PlayerRomve(objectId);
     }
 
     public override void Close()

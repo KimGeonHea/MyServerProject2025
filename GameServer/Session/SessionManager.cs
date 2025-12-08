@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 
 namespace Server
 {
@@ -13,9 +14,9 @@ namespace Server
 		object _lock = new object();
 
 		const int PingTimeoutSec = 600; // 예: 60초
+    static readonly TimeSpan timeOut = TimeSpan.FromSeconds(PingTimeoutSec);
 
-
-		public List<ClientSession> GetSessions()
+    public List<ClientSession> GetSessions()
 		{
 			List<ClientSession> sessions = new List<ClientSession>();
 
@@ -60,49 +61,34 @@ namespace Server
 			}
 		}
 
-    public void StartPingChecker()
-    {
-      Thread t = new Thread(PingLoop);
-      t.IsBackground = true;
-      t.Name = "PingChecker";
-      t.Start();
-    }
+		public void CheckTimeout()
+		{
+			DateTime now = DateTime.UtcNow;
+			List<ClientSession> toDisconnect = new List<ClientSession>();
 
-    void PingLoop()
-    {
-      List<ClientSession> toDisconnect = new List<ClientSession>();
-      while (true)
-      {
-        DateTime now = DateTime.UtcNow;
-        toDisconnect.Clear();
+			lock (_lock)
+			{
+				foreach (var kv in _sessions)
+				{
+					ClientSession s = kv.Value;
+					if (now - s.LastPacketUtc > timeOut)
+					{
+						toDisconnect.Add(s);
+					}
+				}
+			}
 
-        lock (_lock)
-        {
-          foreach (ClientSession s in _sessions.Values)
-          {
-            double idleSec = (now - s.LastPacketUtc).TotalSeconds;
-            if (idleSec > PingTimeoutSec)
-            {
-              toDisconnect.Add(s);
-            }
-          }
-        }
-
-        // 잠금 밖에서 실제 소켓 끊기
-        foreach (ClientSession s in toDisconnect)
-        {
-          try
-          {
-            s.Disconnect(); 
-          }
-          catch (Exception e)
-          {
-            Console.WriteLine($"PingLoop Disconnect Error: {e}");
-          }
-        }
-
-        Thread.Sleep(1000); // 1초마다 체크
-      }
-    }
+			foreach (ClientSession s in toDisconnect)
+			{
+				try
+				{
+					s.Disconnect();
+				}
+				catch (Exception e)
+				{
+					Console.WriteLine($"CheckTimeout Disconnect Error: {e}");
+				}
+			}
+		}
   }
 }

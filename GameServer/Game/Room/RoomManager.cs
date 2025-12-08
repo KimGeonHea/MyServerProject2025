@@ -34,6 +34,7 @@ namespace GameServer.Game.Room
     {
       // 로비 전용 워커 1개
       lobbyWorker = new RoomWorker(lobbyHz, "LobbyWorker");
+      lobbyWorker.DoSessionTimeoutCheck = true;
       lobbyWorker.Add(LobbyRoom);
 
       // 2) 게임 워커들 생성
@@ -45,7 +46,6 @@ namespace GameServer.Game.Room
       //    (StageDataDict 는 네가 DataManager 같은 데서 들고 있는 딕셔너리라고 가정)
       SingleRoom = new SingleGameRoom();
 
-      // 최소 1개는 있다고 가정, 0개면 fallback 으로 lobbyWorker 를 사용해도 되고
       if (gameWorker.Count > 0)
         gameWorker[0].Add(SingleRoom);   //로비랑 분리된 쓰레드
       else
@@ -105,7 +105,7 @@ namespace GameServer.Game.Room
         foreach (var p in room.players.Values.ToList())
         {
           room.LeaveGame(p);            // 통지(S_LeaveGame)
-          room.Remove(p.ObjectID);      // 링크 해제 + players.Remove
+          room.PlayerRomve(p.ObjectID);      // 링크 해제 + players.Remove
         }
 
         // 워커에서 떼기
@@ -113,7 +113,8 @@ namespace GameServer.Game.Room
         room.Worker = null;
 
         // 매니저 딕셔너리 제거
-        lock (_roomsLock) gameRooms.Remove(roomId);
+        lock (_roomsLock)
+          gameRooms.Remove(roomId);
 
         // 풀 반납
         gameRoomPool.Return(room);

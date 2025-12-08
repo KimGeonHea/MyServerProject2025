@@ -82,7 +82,7 @@ class PacketHandler
           p.Session?.Send(new S_LeaveGame { /* Reason/NextState 등 필요시 */ });
 
           // 2) 서버 권위로 제거
-          gr.Remove(p.ObjectID);
+          gr.PlayerRomve(p.ObjectID);
 
           // 3) 로비로 보내기 방에 Push (워커 X)
           var lobby = RoomManager.Instance.LobbyRoom;
@@ -98,7 +98,7 @@ class PacketHandler
           lb.Push(lb.CancelMatch, p);
 
           // 정책상 로비 자체도 떠나게 하려면:
-          lb.Push(lb.Remove, p.ObjectID);
+          lb.Push(lb.PlayerRomve, p.ObjectID);
           break;
         case SingleGameRoom single:
           //  싱글 LeaveGame 호출

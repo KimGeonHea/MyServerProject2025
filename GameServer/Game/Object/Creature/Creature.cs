@@ -1,5 +1,4 @@
-﻿using GameServer.Game.Object.Creature;
-using GameServer.Game.Room;
+﻿using GameServer.Game.Room;
 using Google.Protobuf.Protocol;
 using System;
 using System.Collections.Generic;
@@ -10,6 +9,35 @@ using System.Threading.Tasks;
 
 namespace GameServer.Game
 {
+  public readonly struct DamageContext
+  {
+    public readonly int Amount;
+    public readonly bool IsCritical;
+    public readonly EHeroSubSkillType SubType;
+    public readonly float Duration;       // Stun/Airborn 시간
+    public readonly float Power;          // Knockback 거리 or Airborn 높이
+    public readonly Vector3 Direction;    // Knockback 방향
+    public readonly BaseObject Attacker;
+
+    public DamageContext(
+      int amount,
+      bool isCritical = false,
+      EHeroSubSkillType subType = EHeroSubSkillType.EskillSubtypeNone,
+      float power = 0f,
+      float duration = 0f,
+      Vector3? dir = null,
+      BaseObject attacker = null)
+    {
+      Amount = amount;
+      IsCritical = isCritical;
+      SubType = subType;
+      Power = power;
+      Duration = duration;
+      Direction = dir ?? Vector3.Zero;
+      Attacker = attacker;
+    }
+  }
+
   public class Creature : BaseObject
   {
     public virtual Vector3 ColliderPosition { get; set; }
@@ -66,7 +94,6 @@ namespace GameServer.Game
     public override void FixedUpdate(float deltatime)
     {
       UpdateCC(deltatime);
-      //CC구현//
     }
 
     protected virtual void UpdateCC(float dt) {  }

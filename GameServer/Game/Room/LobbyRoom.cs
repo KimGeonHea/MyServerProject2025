@@ -153,7 +153,7 @@ namespace GameServer.Game.Room
         lobby.Push(() =>
         {
           // (1) 로비에서 제거
-          lobby.Remove(player.ObjectID);
+          lobby.PlayerRomve(player.ObjectID);
 
           // (2) 싱글 룸 워커에게 일을 던진다
           RoomManager.Instance.SingleRoom.Push(() =>

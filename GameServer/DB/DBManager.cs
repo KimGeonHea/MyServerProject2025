@@ -67,10 +67,10 @@ namespace Server.Game
         _executeQueue.Enqueue(playerDbId);
       }
 
-      _jobQueueDic[playerDbId].Enqueue(() => 
+      _jobQueueDic[playerDbId].Enqueue(() =>
       {
         action.Invoke();
-        FinishProcessing(playerDbId); 
+        FinishProcessing(playerDbId);
       });
     }
 
@@ -134,7 +134,7 @@ namespace Server.Game
           Interlocked.Exchange(ref _playerDbIdGenerator, playerDb.PlayerDbId);
 
         GachaDb gachaDb = context.gachaDbs.OrderByDescending(x => x.GachaDbId).FirstOrDefault();
-        if(gachaDb != null)
+        if (gachaDb != null)
           Interlocked.Exchange(ref _gachaDbIdGenerator, gachaDb.GachaDbId);
 
         Console.WriteLine($"HeroDbIdGenerator initialized to {_heroDbIdGenerator}");
@@ -188,25 +188,24 @@ namespace Server.Game
         if (player != null)
           return null;
 
-        //DateTime nowKorea = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, KoreaTimeZone);
-        // 전날 오전 6시로 설정
-        //DateTime initialEnergyTime = nowKorea.Date.AddHours(9).AddDays(-1);
+        // 1) 클라에서 온 값: 없으면 일단 "KR" 가정
+        string rawTz = string.IsNullOrWhiteSpace(loginPacket.TimeZoneId)
+          ? "KR"
+          : loginPacket.TimeZoneId;     // "Asia/Seoul" 또는 "KR" 또는 "Korea Standard Time" 등
 
-        string tzId = string.IsNullOrWhiteSpace(loginPacket.TimeZoneId) ? "Asia/Seoul" : loginPacket.TimeZoneId;
+        // 2) 정규화: "KR" -> "Asia/Seoul"
+        string tzId = TzUtil.NormalizeTzOrCountry(rawTz, "Asia/Seoul");
+
         byte resetHour = 9;
         var weekStart = DayOfWeek.Monday;
 
-        // “지금” 기준, 전 일일창 시작 직후로 세팅하면,
-        // 가입 직후에도 중복지급 없이 다음 창에서 지급되게 만들 수 있음.
         var nowUtc = DateTime.UtcNow;
         var (startUtc, _) = TzUtil.GetDailyWindowUtc(tzId, nowUtc, resetHour);
-        var initialEnergyGiven = startUtc.AddSeconds(1); // 창 시작 직후로 표시
-
-
+        var initialEnergyGiven = startUtc.AddSeconds(1);
 
         player = new PlayerDb()
         {
-          AccountDbId = DBManager.GeneratePlayerDbId(), //TODO Oath에서 진행예정
+          AccountDbId = DBManager.GeneratePlayerDbId(),
           PlayerDbId = DBManager.GeneratePlayerDbId(),
           PlayerName = loginPacket.Uniqeid,
           Level = 1,
@@ -217,13 +216,15 @@ namespace Server.Game
           Energy = 60,
           StageName = "1-1",
           InventoryCapacity = 30,
+
+          //DB에는 정규화된 타임존만 저장
           TimeZoneId = tzId,
           WeekStartDay = weekStart,
 
           LastEnergyGivenTime = TzUtil.AsUtc(initialEnergyGiven),
           LastDailyRewardTime = default,
           WeeklyRewardFlags = 0,
-          Heros = new List<HeroDb>(), 
+          Heros = new List<HeroDb>(),
           Items = new List<ItemDb>()
         };
 
@@ -232,7 +233,7 @@ namespace Server.Game
         db.SaveChanges();
 
 
-        if(DataManager.HeroDataDict.TryGetValue(101, out HeroData hoodieData))
+        if (DataManager.HeroDataDict.TryGetValue(101, out HeroData hoodieData))
         {
           HeroDb heroDb = new HeroDb()
           {
@@ -304,43 +305,37 @@ namespace Server.Game
         {
           var nowUtc = DateTime.UtcNow;
 
-          ResetWeeklyRewardIfNeeded(player, nowUtc);
-
+          bool weeklyReset = ResetWeeklyRewardIfNeeded(player, nowUtc);
 
           db.Entry(player).Collection(p => p.Heros).Load();
           db.Entry(player).Collection(p => p.Items).Load();
           db.Entry(player).Collection(p => p.Gachas).Load();
 
-          //아침이 되면 에니지 지급//
-          if (CanGiveDailyEnergy(player , nowUtc))
+          bool energyGiven = false;
+
+          if (CanGiveDailyEnergy(player, nowUtc))
           {
             int energyToGive = Math.Min(Define.ENERGY_MAX - player.Energy, Define.ENERGY_MAX);
             if (energyToGive > 0)
             {
               player.Energy += energyToGive;
-              player.LastEnergyGivenTime = DateTime.UtcNow;
+              player.LastEnergyGivenTime = nowUtc;
+              energyGiven = true;
+            }
+          }
 
-              if (db.SaveChangesEx())
-                return player;
-              Console.WriteLine($"{player.PlayerName} 하루 에너지 지급 완료!");
-            }
-            else
-            {
-              Console.WriteLine($"{player.PlayerName} 에너지가 이미 최대치입니다. 지급하지 않습니다.");
-            }
-          }
-          else
-          {
-            Console.WriteLine($"{player.PlayerName} 오늘은 이미 에너지를 받았습니다.");
-          }
+          //  주간 리셋 또는 에너지 지급 중 하나라도 있으면 DB 저장
+          if (weeklyReset || energyGiven)
+            db.SaveChangesEx();
         }
+
 
         return player;
       }
     }
 
 
-    public static HeroDb CreateHeorDb(int playerDbId, HeroData herodata , int Slot)
+    public static HeroDb CreateHeorDb(int playerDbId, HeroData herodata, int Slot)
     {
 
       using (GameDbContext db = new GameDbContext())
@@ -362,7 +357,7 @@ namespace Server.Game
       return null;
     }
 
-    public static ItemDb CreateItemDb(int playerDbId , int templateId)
+    public static ItemDb CreateItemDb(int playerDbId, int templateId)
     {
       using (GameDbContext db = new GameDbContext())
       {
@@ -456,81 +451,23 @@ namespace Server.Game
     }
 
     // 주간 리셋(월~일 등) — 로그인 시/보상 전 호출
-    public static void ResetWeeklyRewardIfNeeded(PlayerDb p, DateTime nowUtc)
+    public static bool ResetWeeklyRewardIfNeeded(PlayerDb p, DateTime nowUtc)
     {
       nowUtc = TzUtil.AsUtc(nowUtc);
 
-      // “오늘”의 일일창 시작을 앵커로
-      var (dayStartUtc, _) = TzUtil.GetDailyWindowUtc(p.TimeZoneId, nowUtc);
-      var nowWeekStartUtc = TzUtil.GetWeekStartUtc(p.TimeZoneId, p.WeekStartDay, dayStartUtc);
-
       var lastDailyUtc = TzUtil.AsUtc(p.LastDailyRewardTime);
-      DateTime lastWeekStartUtc = DateTime.MinValue;
-      if (lastDailyUtc != default)
+      if (lastDailyUtc == default)
+        return false; // 한 번도 일일 보상 안 받았으면 굳이 리셋할 건 없음
+
+      // TzUtil에 만든 IsNewWeekUtc 활용
+      if (TzUtil.IsNewWeekUtc(p.TimeZoneId, p.WeekStartDay, lastDailyUtc, nowUtc))
       {
-        // 과거의 "그날" 기준으로 주 시작 계산
-        var (lastDayStartUtc, _) = TzUtil.GetDailyWindowUtc(p.TimeZoneId, lastDailyUtc);
-        lastWeekStartUtc = TzUtil.GetWeekStartUtc(p.TimeZoneId, p.WeekStartDay, lastDayStartUtc);
+        p.WeeklyRewardFlags = 0;   // 주간 보상 0000000으로 초기화
+        return true;
       }
 
-      if (lastWeekStartUtc < nowWeekStartUtc)
-        p.WeeklyRewardFlags = 0;
+      return false;
     }
-
-    //public static bool CanGiveDailyEnergy(PlayerDb player)
-    //{
-    //  // 한국 시간 (UTC+9) 기준으로 변환
-    //  DateTime lastGivenKorea = TimeZoneInfo.ConvertTimeFromUtc(player.LastEnergyGivenTime, KoreaTimeZone);
-    //  DateTime nowKorea = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, KoreaTimeZone);
-    //
-    //  // 오늘 오전 6시
-    //  DateTime today9AM = nowKorea.Date.AddHours(9);
-    //
-    //  // 만약 지금 시간이 오늘 6시 이전이면, 기준 시각은 어제 6시
-    //  if (nowKorea < today9AM)
-    //    today9AM = today9AM.AddDays(-1);
-    //
-    //  return lastGivenKorea < today9AM;
-    //}
-    //
-    //static TimeZoneInfo ResolveTz(string tzId)
-    //{
-    //  if (string.IsNullOrWhiteSpace(tzId)) return TimeZoneInfo.Utc;
-    //  try { return TimeZoneInfo.FindSystemTimeZoneById(tzId); }
-    //  catch { return TimeZoneInfo.Utc; } // 폴백
-    //}
-    //
-    //// “오늘” 리셋 창(09:00~다음날 09:00)의 [startUtc, nextUtc]
-    //static (DateTime startUtc, DateTime nextUtc) GetDailyWindowUtc(PlayerDb p, DateTime nowUtc)
-    //{
-    //  var tz = ResolveTz(p.TimeZoneId);           // 없으면 "Asia/Seoul" 또는 "UTC"
-    //  var nowLocal = TimeZoneInfo.ConvertTimeFromUtc(nowUtc, tz);
-    //
-    //  var startLocal = new DateTime(nowLocal.Year, nowLocal.Month, nowLocal.Day, p.ResetHourLocal, 0, 0);
-    //  if (nowLocal < startLocal) startLocal = startLocal.AddDays(-1); // 9시 전이면 전날 9시가 오늘분 시작
-    //
-    //  var nextLocal = startLocal.AddDays(1);
-    //
-    //  var startUtc = TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(startLocal, DateTimeKind.Unspecified), tz);
-    //  var nextUtc = TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(nextLocal, DateTimeKind.Unspecified), tz);
-    //  return (startUtc, nextUtc);
-    //}
-    //
-    //// “주 시작(월요일 등)”을 UTC로
-    //static DateTime GetWeekStartUtc(PlayerDb p, DateTime anchorStartUtc)
-    //{
-    //  var tz = ResolveTz(p.TimeZoneId);
-    //  var anchorLocal = TimeZoneInfo.ConvertTimeFromUtc(anchorStartUtc, tz);
-    //
-    //  int diff = ((7 + (int)anchorLocal.DayOfWeek - (int)p.WeekStartDay) % 7);
-    //  var weekStartLocal = anchorLocal.AddDays(-diff);
-    //
-    //  return TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(weekStartLocal, DateTimeKind.Unspecified), tz);
-    //}
-    //
-    //
-    //private static readonly TimeZoneInfo KoreaTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Asia/Seoul");
   }
-
 }
 

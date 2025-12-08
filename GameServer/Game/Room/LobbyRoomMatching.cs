@@ -110,7 +110,7 @@ namespace GameServer.Game.Room
     }
 
     /// <summary>로비에서 제거될 때 큐에서도 정리</summary>
-    public override void Remove(int objectId)
+    public override void PlayerRomve(int objectId)
     {
       NodeRef info;
       if (ratingIndex.TryGetValue(objectId, out info))
@@ -126,7 +126,7 @@ namespace GameServer.Game.Room
       }
 
       // 부모(Room)의 players 딕셔너리 및 링크 해제
-      base.Remove(objectId);
+      base.PlayerRomve(objectId);
     }
 
 
@@ -196,8 +196,8 @@ namespace GameServer.Game.Room
               // 예) 버킷48의 D(202)를 제거 → 버킷48 리스트에서 D 빠짐, ratingIndex에서도 202 제거
 
               // 3) 로비 players 딕셔너리에서도 링크 해제 (이제 로비 대기자가 아니라 "매칭된 사람")
-              base.Remove(anchor.Player.ObjectID);
-              base.Remove(partnerNode.Value.Player.ObjectID);
+              base.PlayerRomve(anchor.Player.ObjectID);
+              base.PlayerRomve(partnerNode.Value.Player.ObjectID);
               // 예) players 딕셔너리에서 101, 202 삭제. 
               //     이렇게 해야 로비에서 중복 처리/중복 입장 같은 문제가 안 생김.
 

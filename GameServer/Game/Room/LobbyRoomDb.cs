@@ -123,7 +123,11 @@ namespace GameServer.Game.Room
       });
     }
 
-
+    /// <summary>
+    /// TODO 데이터로 빼야함
+    /// </summary>
+    /// <param name="player"></param>
+    /// <param name="day"></param>
     private void RewardDaily(Player player, int day)
     {
       switch (day)
@@ -165,13 +169,13 @@ namespace GameServer.Game.Room
       {
         case ERewardType.ErwardTypeGold:
           player.playerStatInfo.Gold += count;
-          player.ApplyAddOrDeleteGoldDiaEnergy(type, count);
+          player.ApplayGodAndDiaDailyReward(type, count);
           DBupdateGoldAndDaimond(player);
           break;
 
         case ERewardType.ErwardTypeDiamod:
           player.playerStatInfo.Daimond += count;
-          player.ApplyAddOrDeleteGoldDiaEnergy(type, count);
+          player.ApplayGodAndDiaDailyReward(type, count);
           DBupdateGoldAndDaimond(player);
           break;
 

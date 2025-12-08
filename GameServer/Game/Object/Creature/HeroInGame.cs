@@ -25,11 +25,10 @@ namespace GameServer.Game
       // 2) 하드 CC(스턴/에어본) 중이면 이동 X
       if (stunRemain > 0f || airbornRemain > 0f || isKnockback)
         return;
-
       // 3) 입력 방향으로 이동
       ApplyMove(MoveDir, MoveSpeed, deltaTime);
-
     }
+
     public override void ApplyMove(Vector3 dir, float speed, float deltaTime)
     {
       Vector3 cleanDir = new Vector3(dir.X, 0, dir.Z);

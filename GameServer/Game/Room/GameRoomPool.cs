@@ -19,6 +19,8 @@ namespace GameServer.Game.Room
     {
       _capacity = Math.Max(0, capacity);
       _count = 0;
+
+      Prewarm(200);
     }
 
     public int Count => Volatile.Read(ref _count);
@@ -29,7 +31,8 @@ namespace GameServer.Game.Room
       for (int i = 0; i < count; i++)
       {
         var room = new GameRoom();
-        if (!TryEnqueue(room)) break;
+        if (!TryEnqueue(room)) 
+          break;
       }
     }
 
@@ -50,11 +53,13 @@ namespace GameServer.Game.Room
 
     public void Return(GameRoom room)
     {
-      if (room == null) return;
+      if (room == null) 
+        return;
 
       // 아직 활성/워커에 붙어 있으면 반납 금지
       // (Room.IsAlive: (Worker != null) && IsActive)
-      if (room.IsAlive) return;
+      if (room.IsAlive) 
+        return;
 
       // 안전망: 정리(idempotent 가정)
       room.Close();        // IsActive=false, players/baseObjects 클리어

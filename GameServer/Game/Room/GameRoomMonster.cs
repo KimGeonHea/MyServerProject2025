@@ -1,5 +1,4 @@
-﻿using GameServer.Game.Object.Creature;
-using Google.Protobuf.Protocol;
+﻿using Google.Protobuf.Protocol;
 using Server.Data;
 using System;
 using System.Collections.Generic;

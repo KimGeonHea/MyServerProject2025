@@ -89,15 +89,15 @@ namespace Google.Protobuf.Protocol {
             "U19TcGF3bk1vbnN0ZXISKAoKb2JqZWN0SW5mbxgBIAEoCzIULlByb3RvY29s",
             "Lk9iamVjdEluZm8SJwoHcG9zSW5mbxgCIAEoCzIWLlByb3RvY29sLlBvc2l0",
             "aW9uSW5mbyIQCg5TX01vbnN0ZXJTdGF0ZSIPCg1TX01vbnN0ZXJNb3ZlIg0K",
-            "C1NfTW9uc3RlckhwIg4KDFNfTW9uc3RlckRpZSKxAQoNU19EYWlseVJld2Fy",
+            "C1NfTW9uc3RlckhwIg4KDFNfTW9uc3RlckRpZSKzAQoNU19EYWlseVJld2Fy",
             "ZBIMCgRnb2xkGAEgASgFEg8KB2RpYW1vbmQYAiABKAUSJAoIaXRlbUluZm8Y",
             "AyABKAsyEi5Qcm90b2NvbC5JdGVtSW5mbxIlCglpdGVtSW5mb3MYBCADKAsy",
-            "Ei5Qcm90b2NvbC5JdGVtSW5mbxIXCg9kYWlseVJld2FyZE9wZW4YBSABKAkS",
-            "GwoTbGFzdERhaWx5UmV3YXJkVGltZRgGIAEoCSITChFDX0RhaWx5UmV3YXJk",
-            "T3BlbiIsChFTX0RhaWx5UmV3YXJkT3BlbhIXCg9kYWlseVJld2FyZE9wZW4Y",
-            "ASABKAkiDgoMQ19SZXdhcmRJdGVtIjQKDFNfUmV3YXJkSXRlbRIkCghpdG1l",
-            "aW5mbxgBIAEoCzISLlByb3RvY29sLkl0ZW1JbmZvQhuqAhhHb29nbGUuUHJv",
-            "dG9idWYuUHJvdG9jb2xQAFABYgZwcm90bzM="));
+            "Ei5Qcm90b2NvbC5JdGVtSW5mbxIZChF3ZWVrbHlSZXdhcmRGbGFncxgFIAEo",
+            "CRIbChNsYXN0RGFpbHlSZXdhcmRUaW1lGAYgASgJIhMKEUNfRGFpbHlSZXdh",
+            "cmRPcGVuIiwKEVNfRGFpbHlSZXdhcmRPcGVuEhcKD2RhaWx5UmV3YXJkT3Bl",
+            "bhgBIAEoCSIOCgxDX1Jld2FyZEl0ZW0iNAoMU19SZXdhcmRJdGVtEiQKCGl0",
+            "bWVpbmZvGAEgASgLMhIuUHJvdG9jb2wuSXRlbUluZm9CG6oCGEdvb2dsZS5Q",
+            "cm90b2J1Zi5Qcm90b2NvbFAAUAFiBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.Protocol.EnumReflection.Descriptor, global::Google.Protobuf.Protocol.StructReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
@@ -163,7 +163,7 @@ namespace Google.Protobuf.Protocol {
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Protocol.S_MonsterMove), global::Google.Protobuf.Protocol.S_MonsterMove.Parser, null, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Protocol.S_MonsterHp), global::Google.Protobuf.Protocol.S_MonsterHp.Parser, null, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Protocol.S_MonsterDie), global::Google.Protobuf.Protocol.S_MonsterDie.Parser, null, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Protocol.S_DailyReward), global::Google.Protobuf.Protocol.S_DailyReward.Parser, new[]{ "Gold", "Diamond", "ItemInfo", "ItemInfos", "DailyRewardOpen", "LastDailyRewardTime" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Protocol.S_DailyReward), global::Google.Protobuf.Protocol.S_DailyReward.Parser, new[]{ "Gold", "Diamond", "ItemInfo", "ItemInfos", "WeeklyRewardFlags", "LastDailyRewardTime" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Protocol.C_DailyRewardOpen), global::Google.Protobuf.Protocol.C_DailyRewardOpen.Parser, null, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Protocol.S_DailyRewardOpen), global::Google.Protobuf.Protocol.S_DailyRewardOpen.Parser, new[]{ "DailyRewardOpen" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Protocol.C_RewardItem), global::Google.Protobuf.Protocol.C_RewardItem.Parser, null, null, null, null, null),
@@ -8539,7 +8539,7 @@ namespace Google.Protobuf.Protocol {
       diamond_ = other.diamond_;
       itemInfo_ = other.itemInfo_ != null ? other.itemInfo_.Clone() : null;
       itemInfos_ = other.itemInfos_.Clone();
-      dailyRewardOpen_ = other.dailyRewardOpen_;
+      weeklyRewardFlags_ = other.weeklyRewardFlags_;
       lastDailyRewardTime_ = other.lastDailyRewardTime_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
@@ -8592,14 +8592,14 @@ namespace Google.Protobuf.Protocol {
       get { return itemInfos_; }
     }
 
-    /// <summary>Field number for the "dailyRewardOpen" field.</summary>
-    public const int DailyRewardOpenFieldNumber = 5;
-    private string dailyRewardOpen_ = "";
+    /// <summary>Field number for the "weeklyRewardFlags" field.</summary>
+    public const int WeeklyRewardFlagsFieldNumber = 5;
+    private string weeklyRewardFlags_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public string DailyRewardOpen {
-      get { return dailyRewardOpen_; }
+    public string WeeklyRewardFlags {
+      get { return weeklyRewardFlags_; }
       set {
-        dailyRewardOpen_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        weeklyRewardFlags_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -8631,7 +8631,7 @@ namespace Google.Protobuf.Protocol {
       if (Diamond != other.Diamond) return false;
       if (!object.Equals(ItemInfo, other.ItemInfo)) return false;
       if(!itemInfos_.Equals(other.itemInfos_)) return false;
-      if (DailyRewardOpen != other.DailyRewardOpen) return false;
+      if (WeeklyRewardFlags != other.WeeklyRewardFlags) return false;
       if (LastDailyRewardTime != other.LastDailyRewardTime) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
@@ -8643,7 +8643,7 @@ namespace Google.Protobuf.Protocol {
       if (Diamond != 0) hash ^= Diamond.GetHashCode();
       if (itemInfo_ != null) hash ^= ItemInfo.GetHashCode();
       hash ^= itemInfos_.GetHashCode();
-      if (DailyRewardOpen.Length != 0) hash ^= DailyRewardOpen.GetHashCode();
+      if (WeeklyRewardFlags.Length != 0) hash ^= WeeklyRewardFlags.GetHashCode();
       if (LastDailyRewardTime.Length != 0) hash ^= LastDailyRewardTime.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -8671,9 +8671,9 @@ namespace Google.Protobuf.Protocol {
         output.WriteMessage(ItemInfo);
       }
       itemInfos_.WriteTo(output, _repeated_itemInfos_codec);
-      if (DailyRewardOpen.Length != 0) {
+      if (WeeklyRewardFlags.Length != 0) {
         output.WriteRawTag(42);
-        output.WriteString(DailyRewardOpen);
+        output.WriteString(WeeklyRewardFlags);
       }
       if (LastDailyRewardTime.Length != 0) {
         output.WriteRawTag(50);
@@ -8697,8 +8697,8 @@ namespace Google.Protobuf.Protocol {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(ItemInfo);
       }
       size += itemInfos_.CalculateSize(_repeated_itemInfos_codec);
-      if (DailyRewardOpen.Length != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeStringSize(DailyRewardOpen);
+      if (WeeklyRewardFlags.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(WeeklyRewardFlags);
       }
       if (LastDailyRewardTime.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(LastDailyRewardTime);
@@ -8727,8 +8727,8 @@ namespace Google.Protobuf.Protocol {
         ItemInfo.MergeFrom(other.ItemInfo);
       }
       itemInfos_.Add(other.itemInfos_);
-      if (other.DailyRewardOpen.Length != 0) {
-        DailyRewardOpen = other.DailyRewardOpen;
+      if (other.WeeklyRewardFlags.Length != 0) {
+        WeeklyRewardFlags = other.WeeklyRewardFlags;
       }
       if (other.LastDailyRewardTime.Length != 0) {
         LastDailyRewardTime = other.LastDailyRewardTime;
@@ -8764,7 +8764,7 @@ namespace Google.Protobuf.Protocol {
             break;
           }
           case 42: {
-            DailyRewardOpen = input.ReadString();
+            WeeklyRewardFlags = input.ReadString();
             break;
           }
           case 50: {
