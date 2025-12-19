@@ -19,7 +19,7 @@ namespace GameServer.Game
         PlayerDbId = playerId,
         PlayerName = playerName,
         TextMessage = message,
-        ChatTime = DateTime.Now.ToString()
+
       };
 
       // 글로벌 채팅에 메시지 추가

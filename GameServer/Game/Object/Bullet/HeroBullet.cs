@@ -13,76 +13,103 @@ namespace GameServer.Game
 {
   public class HeroBullet : BaseObject , IPoolable
   {
-    public int TempleteId { get => templeteId; set => templeteId = value; }
-    public int OwnerId { get; set; } = 0; // 발사체 소유자 ID
 
+    protected float gravity = -9.8f;
+    /// <summary>
+    /// 여기서부터 데이터
+    /// </summary>
     public HeroSkillData heroSkillData;
+    protected float Speed;
+    protected float Range;
+    protected float Radius;
+    protected float CcPower;
+    protected float CcDuration;
+    /// <summary>
+    /// 여기서부터 오너 
+    /// </summary>
     public Hero Owner { get; set; }
+    public int OwnerId { get; set; } = 0; // 발사체 소유자 
 
+    protected int damage;
 
+    protected Vector3 startPosition;
 
-    private int templeteId;
-    private int damage;
-    private float bulletSpeed;
-    private float bulletRange;
-    private Vector3 startPosition;
+    public bool GameplayEnabled { get; private set; } = true;
+    public void SetGameplayEnabled(bool enabled)
+      => GameplayEnabled = enabled;
 
-    const int MAXDISTANCE = 10;
+    protected const int MAXDISTANCE = 10;
 
     public virtual void OnSpawned()
     {
+      IsAlive = true;
       Owner = null;
       ObjectID = 0;
       Position = Vector3.Zero;
-      MoveDir = Vector3.Zero;
-      bulletRange = 0;
-      bulletSpeed = 0;
-      IsAlive = true;
+      Direction = Vector3.Zero;
+      Range = 0;
+      Speed = 0;
+      GameplayEnabled = true;
     }
 
     public virtual void OnDespawned()
     {
-      
+      IsAlive = false;
+      //Owner = null;
+      //ObjectID = 0;
+      //Position = Vector3.Zero;
+      //Direction = Vector3.Zero;
+      //Range = 0;
+      //Speed = 0;
     }
 
     /// <summary>
-    /// Skill 발사체 초기화
+    /// Bullet 발사체 초기화
     /// </summary>
     /// <param name="owner"></param>
     /// <param name="direction"></param>
     /// <param name="startPos"></param>
     /// <param name="isSkill"> 101  = 총알 , 102 = 스킬</param>
-    public void Init(Hero owner, Vector3 direction, Vector3 startPos, bool isSkill = false)
+    public virtual void Init(Hero owner, Vector3 direction, Vector3 startPos)
     {
       Owner = owner;
-      TempleteId = owner.TempleteID;
+      OwnerId = owner.ObjectID;
+      TempleteID = owner.TempleteID;
       ObjectType = EGameObjectType.Bullet;
       
 
       HeroSkillData skillData = null;
-      if (DataManager.HeroSkilldataDict.TryGetValue(TempleteId , out skillData))
-      {
+      if (DataManager.HeroSkilldataDict.TryGetValue(TempleteID, out skillData))
         heroSkillData = skillData;
+
+      if(skillData != null)
+      {
+        TempleteID = skillData.TemplateId;
+        Speed = skillData.Speed;
+        Range = skillData.Range;
+        CcDuration = skillData.CcDuration;
+        CcPower = skillData.CcPower;  
       }
 
+      this.Direction = Vector3.Normalize(new Vector3(direction.X, 0, direction.Z));
 
-      this.MoveDir = Vector3.Normalize(new Vector3(direction.X, 0, direction.Z));
-      bulletSpeed = skillData.Speed;
-      bulletRange = skillData.Range;
       startPosition = owner.Position;
-
-      startPosition = new Vector3(owner.Position.X, startPos.Y, owner.Position.Z); // 발사 위치 조정 (Y축 1.0f 위로) 
-      TempleteID = skillData.TemplateId;
+      startPosition = new Vector3(owner.Position.X, startPos.Y, owner.Position.Z); // 발사 위치 조정 무기 포지션으로 받아서 처리
       Position = startPosition;
-      damage = owner.HeroData.AttackDamage; // 발사체 피해량은 소유자의 공격력으로 설정
-      //Console.WriteLine(startPosition);
+
+
+      if(owner != null)
+      damage = owner.AttackDamage; // 발사체 피해량은 소유자의 공격력으로 설정
+
     }
 
     public override void FixedUpdate(float deltaTime)
     {
+      if (!IsAlive || Owner == null || Owner.Room == null)
+        return;
       base.FixedUpdate(deltaTime);
       CheckCollision();
-      ApplyMove(MoveDir, bulletSpeed, deltaTime);
+      ApplyMove(Direction, Speed, deltaTime);
       
       // 발사체가 범위를 벗어났는지 확인
       if (Vector3.Distance(startPosition, Position) > MAXDISTANCE)
@@ -105,11 +132,7 @@ namespace GameServer.Game
       Vector3 normalizedDir = Vector3.Normalize(cleanDir);
       Vector3 delta = normalizedDir * speed * deltaTime;
 
-      Vector3 newPos = new Vector3(
-          PosInfo.PosX + delta.X,
-          PosInfo.PosY,
-          PosInfo.PosZ + delta.Z
-      );
+      Vector3 newPos = new Vector3(PositionInfo.PosX + delta.X,PositionInfo.PosY, PositionInfo.PosZ + delta.Z);
       //충돌체크
 
       var grid = DataManager.ObstacleGrid;
@@ -118,17 +141,17 @@ namespace GameServer.Game
         Owner?.Room.Despawn(this);
         return;
       }
-
+      Position = newPos;
       // 이동 적용
-      PosInfo.PosX = newPos.X;
-      PosInfo.PosY = newPos.Y;
-      PosInfo.PosZ = newPos.Z;
+      PositionInfo.PosX = newPos.X;
+      PositionInfo.PosY = newPos.Y;
+      PositionInfo.PosZ = newPos.Z;
 
-      PosInfo.DirX = normalizedDir.X;
-      PosInfo.DirY = 0;
-      PosInfo.DirZ = normalizedDir.Z;
+      PositionInfo.DirX = normalizedDir.X;
+      PositionInfo.DirY = 0;
+      PositionInfo.DirZ = normalizedDir.Z;
     }
-    private void CheckCollision()
+    protected virtual void CheckCollision()
     {
       GameRoom room = Owner.Room as GameRoom;
 
@@ -136,9 +159,11 @@ namespace GameServer.Game
       {
         if (c == null || c.ObjectID == Owner.ObjectID)
           continue;
+
+        Vector3 xzPos = new Vector3(Position.X , 0 , Position.Z);
         
-        float dist = Vector3.Distance(c.ColliderPosition, this.Position);
-        float totalRadius = heroSkillData.Radius + c.ColliderRadius; // 각 반지름 합
+        float dist = Vector3.Distance(c.Position, xzPos);
+        float totalRadius = Radius + c.ColliderRadius; // 각 반지름 합
 
         if (dist < totalRadius)
         {
@@ -148,9 +173,5 @@ namespace GameServer.Game
         }
       }
     }
-
-
   }
-
-
 }

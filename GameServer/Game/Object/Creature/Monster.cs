@@ -10,35 +10,6 @@ using System.Threading.Tasks;
 
 namespace GameServer.Game
 {
-  public readonly struct DamageContext
-  {
-    public readonly int Amount;
-    public readonly bool IsCritical;
-    public readonly EHeroSubSkillType SubType;
-    public readonly float Duration;       // Stun/Airborn 시간
-    public readonly float Power;          // Knockback 거리 or Airborn 높이
-    public readonly Vector3 Direction;    // Knockback 방향
-    public readonly BaseObject Attacker;
-
-    public DamageContext(
-      int amount,
-      bool isCritical = false,
-      EHeroSubSkillType subType = EHeroSubSkillType.EskillSubtypeNone,
-      float power = 0f,
-      float duration = 0f,
-      Vector3? dir = null,
-      BaseObject attacker = null)
-    {
-      Amount = amount;
-      IsCritical = isCritical;
-      SubType = subType;
-      Power = power;
-      Duration = duration;
-      Direction = dir ?? Vector3.Zero;
-      Attacker = attacker;
-    }
-  }
-
   public class Monster : Creature
   {
     // ===== 팀 / 타워 =====
@@ -189,6 +160,8 @@ namespace GameServer.Game
 
     protected override void ApplyKnockback(in DamageContext ctx)
     {
+      base.ApplyKnockback(ctx);
+
       if (ImmuneKnockback)
         return;
 
@@ -325,9 +298,9 @@ namespace GameServer.Game
     }
 
     // ===== Creature Hook들 =====
-    protected override void OnHpChanged()
+    protected override void UpdateHp()
     {
-      base.OnHpChanged();
+      base.UpdateHp();
 
       if (Room != null)
       {

@@ -120,9 +120,10 @@ namespace Server.Data
     public float Speed;
     public float Range;
     public float Radius;
-    public float CenterX;
-    public float CenterY;
-    public float CenterZ;
+    public float CcPower;
+    public float CcDuration;
+    public float DelayTime;
+    public float Cooltime;
   }
 
 

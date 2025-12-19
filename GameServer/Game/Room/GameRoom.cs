@@ -1,4 +1,5 @@
 ﻿using GameServer.Game.Object;
+using GameServer.Migrations;
 using GameServer.Utils;
 using Google.Protobuf;
 using Google.Protobuf.Protocol;
@@ -18,11 +19,13 @@ namespace GameServer.Game.Room
 {
   public partial class GameRoom : Room
   {
-
+    //스폰 데이터 적용시켜야함//
     readonly Vector3[] _spawnPositions = { new Vector3(-4f, 0f, 25), new Vector3(-4f, 0f, 0f) };// 플레이어1 시작 위치}
 
     double _sendAccum = 0;
     double _sendInterval = 1.0 / 30.0f; // 30Hz로 전송
+
+    const float STAMINA_SEND_INTERVAL = 0.15f;
 
     public Dictionary<int/*OjbectId*/, Hero> heroes = new Dictionary<int, Hero>();
     public Dictionary<int/*OjbectId*/, Creature> creatures = new Dictionary<int, Creature>();
@@ -31,42 +34,33 @@ namespace GameServer.Game.Room
 
     public override void EnterGame(Player player)
     {
-      // 0) 가드
       if (player == null || !IsAlive)
         return;
-
-      // 1) 1vs1 방 용량 체크(넘치면 무시 or 거절 정책)
+      // 1vs1 방 용량 체크(넘치면 무시 or 거절 정책)
       if (players.Count >= 2)
         return;
-
       base.EnterGame(player);
-
-      // 3) 세션 상태 전환
+      //  세션 상태 전환
       player.Session.ServerState = PlayerServerState.ServerStateMultigame;
-
-      // 4) 영웅 접속 처리
-      var hero = player.selectHero;                // (오타 주의: selectHero 일관)
+      //  영웅 접속 처리
+      var hero = player.selectHero;            
       if (hero != null)
       {
-        // 영웅을 '플레이어와 동일한 ObjectID'로 쓸 거라면 그대로 매핑
-        //hero.ObjectID = player.ObjectID;
+        // 방 / 장비 스탯 합산 / 행동 초기화
         hero.Room = this;
+        hero.InitTotalData(player.inventory.GetTotalDataEquipItems());
+        hero.InitMoveTempleteId(hero.TempleteID);
 
-        // 장비/스탯 합산
-        hero.SetTotalData(player.inventory.GetTotalDataEquipItems());
-
-
+        //ID 기준으로 영웅 입장 처리 //
         base.EnterGame(hero);
-        // 등록(키를 hero.ObjectID로 통일해 두면 찾기 쉬움)
         heroes[hero.ObjectID] = hero;
         creatures[hero.ObjectID] = hero;
       }
-
-
-      // 6) 2명 모이면 시작
+      // 2명 모이면 시작
       if (players.Count == 2)
         TryStartGame();
     }
+
     public override void EnterGame(BaseObject baseObject)
     {
       base.EnterGame(baseObject);
@@ -94,12 +88,10 @@ namespace GameServer.Game.Room
       Hero h1 = p1.selectHero;
       Hero h2 = p2.selectHero;
 
-      h1.TeamType = ETeamType.Red;
-      h2.TeamType = ETeamType.Blue;
+      h1.TeamType = ETeamType.Red; h2.TeamType = ETeamType.Blue;
 
       // 1) 서버에서 스타팅 포지션 확정
-      PlaceHeroAtSpawn(h1, 0);
-      PlaceHeroAtSpawn(h2, 1);
+      PlaceHeroAtSpawn(h1, 0); PlaceHeroAtSpawn(h2, 1);
 
       InitPvpTowers(h1,h2);
       // 2) HeroInfo 미리 만들어두기 (동일 객체 재사용)
@@ -133,12 +125,12 @@ namespace GameServer.Game.Room
         ObjectInfo = MakeObjectInfo(hero),
         PosInfo = new PositionInfo()
         {
-          PosX = hero.PosInfo.PosX,
-          PosY = hero.PosInfo.PosY,
-          PosZ = hero.PosInfo.PosZ,
-          DirX = hero.PosInfo.DirX,
-          DirY = hero.PosInfo.DirY,
-          DirZ = hero.PosInfo.DirZ,
+          PosX = hero.PositionInfo.PosX,
+          PosY = hero.PositionInfo.PosY,
+          PosZ = hero.PositionInfo.PosZ,
+          DirX = hero.PositionInfo.DirX,
+          DirY = hero.PositionInfo.DirY,
+          DirZ = hero.PositionInfo.DirZ,
         }
       };
     }
@@ -169,6 +161,7 @@ namespace GameServer.Game.Room
         BroadcastHeroMoves();
         BroadcastBulletMoves();
         BroadcastSkillMoves();
+        SendStaminaToOwners(deltatime);
       }
     }
 
@@ -269,9 +262,9 @@ namespace GameServer.Game.Room
           PosX = bullet.Position.X,
           PosY = bullet.Position.Y,
           PosZ = bullet.Position.Z,
-          DirX = bullet.MoveDir.X,
-          DirY = bullet.MoveDir.Y,
-          DirZ = bullet.MoveDir.Z
+          DirX = bullet.Direction.X,
+          DirY = bullet.Direction.Y,
+          DirZ = bullet.Direction.Z
         }
       };
     }
@@ -292,12 +285,12 @@ namespace GameServer.Game.Room
           LowerState = hero.EHeroLowerState,
           PosInfo = new PositionInfo
           {
-            PosX = hero.PosInfo.PosX,
-            PosY = 0,//hero.PosInfo.PosY,
-            PosZ = hero.PosInfo.PosZ,
-            DirX = hero.PosInfo.DirX,
-            DirY = hero.PosInfo.DirY,
-            DirZ = hero.PosInfo.DirZ
+            PosX = hero.PositionInfo.PosX,
+            PosY = hero.PositionInfo.PosY,
+            PosZ = hero.PositionInfo.PosZ,
+            DirX = hero.PositionInfo.DirX,
+            DirY = hero.PositionInfo.DirY,
+            DirZ = hero.PositionInfo.DirZ
           }
         }
       };
@@ -319,9 +312,9 @@ namespace GameServer.Game.Room
           PosX = skill.Position.X,
           PosY = skill.Position.Y,
           PosZ = skill.Position.Z,
-          DirX = skill.MoveDir.X,
-          DirY = skill.MoveDir.Y,
-          DirZ = skill.MoveDir.Z
+          DirX = skill.Direction.X,
+          DirY = skill.Direction.Y,
+          DirZ = skill.Direction.Z
         }
       };
         return movepkt;
@@ -331,11 +324,6 @@ namespace GameServer.Game.Room
       if (player == null)
         return;
 
-      // 1) 클라에 나가기 알림
-      // PVP 쪽은 LeaveReason을 어떻게 쓸지에 따라 다르지만
-      // - 경기 도중 유저가 나가기 버튼: Voluntary
-      // - 경기 끝나고 결과 처리 후 방에서 빼줄 때: MatchComplete
-      // 지금 C_LeaveGame 기준이면 '나가기 버튼'이니까 Voluntary로 가자.
       NotifyLeave(player, ELeaveReason.Voluntary, goLobby: true);
 
       // 2) 플레이어 제거 (총알/스킬/영웅 정리 포함)
@@ -369,14 +357,13 @@ namespace GameServer.Game.Room
             Broadcast(new S_Despawn { ObjectId = hero.ObjectID });
             hero.Room = null;             // 링크 해제
           }
-
           return; 
 
         case EGameObjectType.Bullet:
           if (obj is HeroBullet bullet)
           {
             ReturnBullet(bullet);
-            obj.IsAlive = false;
+            //obj.IsAlive = false;
           }
           break;
 
@@ -384,14 +371,13 @@ namespace GameServer.Game.Room
           if (obj is HeroSkill skill)
           {
             ReturnSkill(skill);
-            obj.IsAlive = false;
+            //obj.IsAlive = false;
           }
           break;
 
         case EGameObjectType.Projectile:
           // 중간 타일 같은거 (장애물)만들까
           break;
-
         case EGameObjectType.Monster:
           if(obj is Monster monster)
           {
@@ -403,7 +389,7 @@ namespace GameServer.Game.Room
         case EGameObjectType.Tower:
           if(obj is Tower tower)
           {
-            //towers.Remove(tower.ObjectID);
+            //creatures.Remove(tower.ObjectID);
           }
           break;
       }
@@ -420,7 +406,7 @@ namespace GameServer.Game.Room
       var ownerHero = player.selectHero;           // 플레이어가 조종하던 영웅
       int? ownerHeroId = ownerHero?.ObjectID;      // 영웅 오브젝트 ID (null 가능)
 
-      // 1) 플레이어 소유 오브젝트(총알/스킬 등) 먼저 정리
+      //  플레이어 소유 오브젝트(총알/스킬 등) 먼저 정리
       var list = baseObjects.Values.ToList();
       foreach (var obj in list)
       {
@@ -450,15 +436,13 @@ namespace GameServer.Game.Room
         }
       }
 
-      // 2) 영웅 자체도 룸 오브젝트로 등록되어 있다면 Despawn
+      // 영웅 자체도 룸 오브젝트로 등록되어 있다면 Despawn
       if (ownerHeroId != null && baseObjects.TryGetValue(ownerHeroId.Value, out var heroObj))
         Despawn(heroObj);
 
-      // 3) 영웅 맵에서 제거 (키가 플레이어ID인지 영웅ID인지에 맞게 조정)
-      //    - 현재 코멘트대로 '플레이어 ObjectID'를 키로 쓰는 구조라면 아래 유지
       heroes.Remove(objectId);
 
-      // 4) 마지막으로 플레이어 제거(링크 해제 등은 base.Remove에서 처리)
+      //  마지막으로 플레이어 제거(링크 해제 등은 base.Remove에서 처리)
       base.PlayerRomve(objectId);
     }
 
@@ -472,7 +456,9 @@ namespace GameServer.Game.Room
     {
       return players.Count == 0 ? true : false;
     }
-
+    /// <summary>
+    ///  브로드 캐스트
+    /// </summary>
     void BroadcastBulletMoves()
     {
       // baseObjects에서 HeroBullet만 골라서 전송
@@ -513,25 +499,40 @@ namespace GameServer.Game.Room
     }
     public void MoveHero(Player player, C_HeroMove c_move)
     {
-      if (player == null)
-        return;
-
+      if (player?.selectHero == null) return;
       Hero hero = player.selectHero;
-      if (hero == null)
-        return;
 
-      hero.EHeroUpperState = c_move.HeroInfo.UpperState;
-      hero.EHeroLowerState = c_move.HeroInfo.LowerState;
 
-      Vector3 cleanDir = new Vector3(c_move.HeroInfo.PosInfo.DirX, c_move.HeroInfo.PosInfo.DirY, c_move.HeroInfo.PosInfo.DirZ);
-      if (cleanDir.LengthSquared() <0.001)
-      {
-        return;
-      }
+      Vector3 dir = new Vector3(
+        c_move.HeroInfo.PosInfo.DirX,
+        0,
+        c_move.HeroInfo.PosInfo.DirZ);
 
-      hero.MoveDir = new Vector3(c_move.HeroInfo.PosInfo.DirX, c_move.HeroInfo.PosInfo.DirY, c_move.HeroInfo.PosInfo.DirZ);
-
+      hero.MoveInputDir = dir;
     }
+
+    void SendStaminaToOwners(float dt)
+    {
+      foreach (var hero in heroes.Values)
+      {
+        if (hero == null) continue;
+
+        Player owner = hero.OwnerPlayer;
+        if (owner?.Session == null) 
+          continue;
+
+        if (hero.TryConsumeStaminaDirtyForSend(dt, STAMINA_SEND_INTERVAL, out int cur, out int max))
+        {
+          owner.Session.Send(new S_HeroStamina
+          {
+            ObjectId = hero.ObjectID,
+            CurStamina = cur,
+            MaxStamina = max
+          });
+        }
+      }
+    }
+
 
     private void PlaceHeroAtSpawn(Hero hero, int index)
     {
@@ -546,9 +547,9 @@ namespace GameServer.Game.Room
       hero.Position = pos;  // BaseObject.Position 통해 PosInfo도 같이 세팅
 
       // 혹시나 Dir도 초기화하고 싶으면
-      hero.PosInfo.DirX = 0;
-      hero.PosInfo.DirY = 0;
-      hero.PosInfo.DirZ = (index == 0) ? 1f : -1f; // 서로 마주보게
+      hero.PositionInfo.DirX = 0;
+      hero.PositionInfo.DirY = 0;
+      hero.PositionInfo.DirZ = (index == 0) ? 1f : -1f; // 서로 마주보게
     }
 
     public override void ResetForPool()
@@ -556,6 +557,7 @@ namespace GameServer.Game.Room
       base.ResetForPool();
       heroes.Clear();
       monsters.Clear();
+      creatures.Clear();
     }
 
   }

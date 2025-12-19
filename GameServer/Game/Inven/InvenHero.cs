@@ -31,7 +31,7 @@ namespace GameServer.Game
       foreach (var heroDb in list)
       {
         Hero hero = new Hero();
-        hero.Init(heroDb);
+        hero.Init(heroDb , Owner);
  
         Add(hero);
       }

@@ -29,8 +29,8 @@ namespace GameServer.Game
       get { return totalStatData; }
       set { totalStatData = value; }
     }
-
-    public int OwnerDbid { get; set; }
+    public Player OwnerPlayer { get; set; }
+    public int OwnerDbId { get; set; }
     public EHeroUpperState EHeroUpperState { get; set; } // 상위 상태 (예: 일반, 스킬 사용 중 등)
     public EHeroLowerState EHeroLowerState { get; set; } // 하위 상태 (예: 이동, 공격 등)
     public ETeamType TeamType { get; set; } = ETeamType.None;
@@ -111,7 +111,6 @@ namespace GameServer.Game
     public float CurStamina { get; set; }
     public float MaxStamina { get; set; } = 100.0f;
 
-
     public float StaminaRegenSpeed
     {
       get => baseSprejenSpeed + totalStatData.totalSpregen;
@@ -136,14 +135,14 @@ namespace GameServer.Game
 
     float baseSprejenSpeed = 5.0f;
 
-    public virtual void Init(HeroDb herodb)
+    public virtual void Init(HeroDb herodb , Player p)
     {
       TempleteID = herodb.TemplateId;   
-      OwnerDbid = herodb.PlayerDbId ?? throw new InvalidOperationException("PlayerDbId is null");
+      OwnerDbId = herodb.PlayerDbId ?? throw new InvalidOperationException("PlayerDbId is null");
       HeroDbId = herodb.HeroDbId;
       Slot = herodb.Slot;
       ObjectType = EGameObjectType.Hero;
-
+      OwnerPlayer = p;
       HeroData herodata = null;
 
       if(DataManager.HeroDataDict.TryGetValue(herodb.TemplateId, out herodata))
@@ -156,7 +155,7 @@ namespace GameServer.Game
       }
     }
 
-    public void SetTotalData(ToatalEquipData toatalEquipData)
+    public void InitTotalData(ToatalEquipData toatalEquipData)
     {
       if (HeroData != null || toatalEquipData != null)
       {
@@ -182,7 +181,7 @@ namespace GameServer.Game
     {
       Hero hero =new Hero();
       hero.TempleteID = heardb.TemplateId;
-      hero.OwnerDbid = heardb.PlayerDbId ?? throw new InvalidOperationException("PlayerDbId is null");
+      hero.OwnerDbId = heardb.PlayerDbId ?? throw new InvalidOperationException("PlayerDbId is null");
       hero.HeroDbId = heardb.HeroDbId;
       hero.Slot = heardb.Slot;
 

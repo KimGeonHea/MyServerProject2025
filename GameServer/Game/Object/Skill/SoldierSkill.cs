@@ -18,16 +18,20 @@ namespace GameServer.Game
     private Vector3 targetPosition;
 
     private float elapsed = 0f;
-    private float lifeTime = 1.2f;
-    private float yMultiplier = 1.3f;
-    private float explosionRadius = 1.5f;
+    private float lifeTime = 3.0f;
+
+
+    private float minFlightTime = 0.5f;
+    private float maxFlightTime = 2.0f;
+    private float arcFactor = 1.6f;
 
     public override void OnSpawned()
     {
       base.OnSpawned();
       velocity = Vector3.Zero;
-      MoveDir = Vector3.Zero;
+      Direction = Vector3.Zero;
       elapsed = 0f;
+      lifeTime = 0;
     }
 
     public override void Init(Hero owner, Vector3 start, Vector3 targetPosition)
@@ -38,19 +42,60 @@ namespace GameServer.Game
       TempleteID = Owner.TempleteID + 1;
       damage = Owner.SkillDamage;
 
+      // 그냥 받은 start/target 그대로 사용
       startPosition = new Vector3(Owner.Position.X, start.Y, Owner.Position.Z);
-
       this.targetPosition = targetPosition;
 
-      //HeroSkillData skillData = null;
-      //if (DataManager.HeroSkilldataDict.TryGetValue(TempleteID, out skillData))
-      //{
-      //  heroSkillData = skillData;
-      //}
+      Vector3 to = targetPosition - startPosition;
+      Vector3 toXZ = new Vector3(to.X, 0f, to.Z);
+      float horizontalDistance = toXZ.Length();
 
+      if (horizontalDistance < 0.01f)
+        horizontalDistance = 0.01f;
 
-      CalculateVelocity_FromHeight(startPosition, this.targetPosition, yMultiplier, lifeTime);
+      // 기본 T
+      float baseT = horizontalDistance / Speed;
+
+      // 포물선 과장 (멀어도 더 오래 날게)
+      float T = baseT * arcFactor;
+
+      // 너무 짧거나 길면 클램프
+      if (T < minFlightTime) T = minFlightTime;
+      if (T > maxFlightTime) T = maxFlightTime;
+
+      lifeTime = T;
+      CalculateVelocityPoint(startPosition, this.targetPosition, lifeTime);
       Position = startPosition;
+    }
+    /// <summary>
+    /// 등가속도 운동 공식
+    /// </summary>
+    /// <param name="start"></param>
+    /// <param name="end"></param>
+    /// <param name="time"></param>
+    private void CalculateVelocityPoint(Vector3 start, Vector3 end, float time)
+    {
+      if (time <= 0.0001f)
+      {
+        velocity = Vector3.Zero;
+        return;
+      }
+      // 중력은 예: -9.81f
+      float g = gravity;
+      Vector3 to = end - start;
+      // 수평(XZ)
+      Vector3 toXZ = new Vector3(to.X, 0f, to.Z);
+      Vector3 vXZ = toXZ / time;
+      /* 수직(Y)
+      // endY = startY + vY * T + 0.5 * g * T^2
+      // ednY -startY = vY * T + 0.5 * g * T^2  //( ednY -startY  = toY))
+      // (toY) = ( (vY * time) + (0.5f * g * time * time) )
+      // toY - (0.5f * g * time * time) ) = (vY * time)
+      // vY = toY - (0.5f * g * time * time) / time
+      */
+      float vY = (to.Y - 0.5f * g * time * time) / time;
+
+      velocity = new Vector3(vXZ.X, vY, vXZ.Z);
     }
 
     private void CalculateVelocity_FromHeight(Vector3 start, Vector3 end, float yMultiplier, float flightTime)
@@ -81,8 +126,10 @@ namespace GameServer.Game
 
       elapsed += deltaTime;
 
-      if (elapsed > lifeTime)
+      if (elapsed >= lifeTime)
       {
+        // 남은 오차 없이 딱 목표 지점에 스냅
+        Position = targetPosition;
         Explode();
         return;
       }
@@ -92,12 +139,13 @@ namespace GameServer.Game
       Vector3 delta = velocity * deltaTime;
       Vector3 nextPos = Position + delta;
 
-
       if (velocity.LengthSquared() > 0.0001f)
-        MoveDir = Vector3.Normalize(new Vector3(velocity.X, velocity.Y, velocity.Z));
-      // 충돌 검사 (장애물 또는 지면)
-      if (DataManager.ObstacleGrid.IsBlocked(nextPos) || nextPos.Y <= 0)
+        Direction = Vector3.Normalize(velocity);
+
+      // 장애물 충돌만 체크 (Y<=0 때문에 목표 전에 터져버리면 끄고 보면서 조정)
+      if (DataManager.ObstacleGrid.IsBlocked(nextPos))
       {
+        Position = nextPos;
         Explode();
         return;
       }
@@ -133,11 +181,13 @@ namespace GameServer.Game
 
     private void Explode()
     {
-      if (_exploded)
+      if (exploded)
         return;
-      _exploded = true;
-      IsAlive = true;
-      // 풀에 돌아간 이후거나, 이미 방에서 제거된 경우 방어
+      exploded = true;
+
+      // 보통 여기서 IsAlive = false; 가 맞을 듯
+      IsAlive = false;
+
       if (Owner == null || Room == null)
         return;
 
@@ -145,11 +195,11 @@ namespace GameServer.Game
       if (room == null)
         return;
 
-      // heroSkillData 가 예상과 다르게 null 이어도 죽지 않게 기본값 사용
-      float range = 10.0f;
-      if (heroSkillData != null && heroSkillData.Range > 0)
-        range = heroSkillData.Range;
+      float range = 5.0f;
+      //if (heroSkillData != null && heroSkillData.Range > 0)
+      //  range = heroSkillData.Range;
 
+      float rangeSq = range * range;
 
       foreach (var obj in room.creatures.Values)
       {
@@ -157,10 +207,10 @@ namespace GameServer.Game
           continue;
 
         float distSq = (obj.Position - Position).LengthSquared();
-        if (distSq < range)
+        if (distSq <= rangeSq)
         {
           Vector3 dir = Vector3.Normalize(obj.Position - Position);
-          obj.OnDamageKnockback(damage, dir, 3.5f , Owner);
+          obj.OnDamageKnockback(damage, dir, 3.5f, Owner);
         }
       }
 

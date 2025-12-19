@@ -9,7 +9,6 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace GameServer.Game
 {
@@ -30,7 +29,7 @@ namespace GameServer.Game
     {
       base.OnSpawned();
       velocity = Vector3.Zero;
-      MoveDir = Vector3.Zero;
+      Direction = Vector3.Zero;
       elapsed = 0f;
       bounceCount = 0;
     }
@@ -58,12 +57,8 @@ namespace GameServer.Game
       float flightTime = 0.8f;   // 클라 CalculateVelocity(..., 0.8f)
       float yMultiplier = 1.2f;   // 클라 CalculateVelocity(..., 1.2f, ...)
 
-      // 원하면 여기서 한 번 디버그 찍어봐도 좋음
-      // Console.WriteLine($"[HoodieSkill.Init] start={startPosition}, target={targetPosition}, time={flightTime}");
-
       CalculateVelocity(startPosition, targetPosition, yMultiplier, flightTime);
 
-      // lifeTime은 적당히 여유 있게 (클라는 5f)
       lifeTime = 5f;
     }
 
@@ -71,32 +66,39 @@ namespace GameServer.Game
 
     public void CalculateVelocity(Vector3 start, Vector3 end, float yMultiplier , float flightTime)
     {
-      float g = Math.Abs(gravity);
+      Vector3 to = new Vector3(end.X - start.X, 0f, end.Z - start.Z);
+      float dist = to.Length();
 
-      // 1. 수직 거리 계산
-      float baseVy = g * (flightTime / 2f);
-      float adjustedVy = baseVy * yMultiplier;
+      // 제자리 발사 방지
+      if (dist < 0.001f)
+      {
+        velocity = Vector3.Zero;
+        Direction = Vector3.UnitZ;
+        lifeTime = 0.5f;
+        return;
+      }
 
-      // 2. 오름 시간과 최고점 높이
-      float tUp = adjustedVy / g;
-      float hMax = start.Y + (adjustedVy * adjustedVy) / (2f * g);
+      Vector3 dir = Vector3.Normalize(to);
 
-      // 3. 내려가는 높이
-      float hDown = hMax - end.Y;
+      // 2) 비행 시간 T = 거리 / 수평속도 (수평은 등속도라서)
+      float T = dist / heroSkillData.Speed;
+      if (T < 0.1f) 
+        T = 0.1f; // 너무 짧은 T 방지용
 
-      // 4. 낙하 시간
-      float tDown = MathF.Sqrt(2f * hDown / g);
-      float totalTime = tUp + tDown;
+      // 3) 등가속도 공식으로 vY 역산
+      // dy = endY - startY
+      float dy = end.Y - start.Y;
+      float g = gravity; // 여기서는 음수(-9.81f 같은 값) 사용
 
-      // 5. 수평 이동 속도
-      Vector3 planar = new Vector3(end.X - start.X, 0f, end.Z - start.Z);
-      float horizontalDistance = planar.Length();
-      Vector3 horizontalDir = Vector3.Normalize(planar);
-      float horizontalSpeed = horizontalDistance / totalTime;
+      // dy = vY * T + 0.5 * g * T^2    vY = (dy - 0.5*g*T^2) / T
+      float vY = (dy - 0.5f * g * T * T) / T;
 
-      // 6. 최종 velocity
-      velocity = new Vector3(horizontalDir.X * horizontalSpeed, adjustedVy, horizontalDir.Z * horizontalSpeed);
-      MoveDir = horizontalDir;
+      // 4) 최종 속도 벡터
+      velocity = new Vector3(dir.X * heroSkillData.Speed, vY, dir.Z * heroSkillData.Speed);
+      Direction = dir;
+
+      // 5) lifeTime은 비행시간 + 약간의 여유
+      lifeTime = T + 0.5f;
     }
 
     public override void FixedUpdate(float deltaTime)
@@ -167,9 +169,9 @@ namespace GameServer.Game
     private void Explode()
     {
 
-      if (_exploded)
+      if (exploded)
         return;
-      _exploded = true;
+      exploded = true;
 
       // 풀에 돌아간 이후거나, 이미 방에서 제거된 경우 방어
       if (Owner == null || Room == null)

@@ -189,9 +189,7 @@ namespace Server.Game
           return null;
 
         // 1) 클라에서 온 값: 없으면 일단 "KR" 가정
-        string rawTz = string.IsNullOrWhiteSpace(loginPacket.TimeZoneId)
-          ? "KR"
-          : loginPacket.TimeZoneId;     // "Asia/Seoul" 또는 "KR" 또는 "Korea Standard Time" 등
+        string rawTz = string.IsNullOrWhiteSpace(loginPacket.TimeZoneId) ? "KR" : loginPacket.TimeZoneId; 
 
         // 2) 정규화: "KR" -> "Asia/Seoul"
         string tzId = TzUtil.NormalizeTzOrCountry(rawTz, "Asia/Seoul");

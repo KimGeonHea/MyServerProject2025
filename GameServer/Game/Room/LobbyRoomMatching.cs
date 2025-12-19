@@ -40,7 +40,7 @@ namespace GameServer.Game.Room
       public LinkedListNode<MatchEntry> Node;
     }
 
-    // 버킷 키(= rating / RatingBucketSize) → FIFO 큐
+    // 버킷 키(= rating / RatingBucketSize)  FIFO 큐
     private readonly Dictionary<int, LinkedList<MatchEntry>> ratingBuckets =
       new Dictionary<int, LinkedList<MatchEntry>>();
 
@@ -48,7 +48,7 @@ namespace GameServer.Game.Room
     private readonly Dictionary<int, NodeRef> ratingIndex =
       new Dictionary<int, NodeRef>();
 
-    // 레이팅 → 버킷 키(음수 방지)
+    // 레이팅  버킷 키(음수 방지)
     private int ToBucketKey(int rating)
     {
       if (rating < 0) rating = 0;
@@ -59,7 +59,8 @@ namespace GameServer.Game.Room
     /// <summary>플레이어를 매칭 큐에 등록</summary>
     public void EnqueuePlayer(Player player)
     {
-      if (player == null) return;
+      if (player == null) 
+        return;
 
       // 중복 등록 방지
       if (ratingIndex.ContainsKey(player.ObjectID))
@@ -270,6 +271,8 @@ namespace GameServer.Game.Room
 
       int bestDiff = int.MaxValue;
 
+
+
       // 중심 → 좌/우 1칸 → 좌/우 2칸 …
       for (int radius = 0; radius <= maxRadius; radius++)
       {
@@ -320,12 +323,20 @@ namespace GameServer.Game.Room
       {
         MatchEntry cand = node.Value;
 
+
         // 자기 자신 제외
         if (cand.Player.ObjectID != anchor.Player.ObjectID)
         {
           int diff = Math.Abs(anchor.Rating - cand.Rating);
           int candAllowed = AllowedDiffAt(nowUtc, cand.EnqueueUtc);
           int allowed = Math.Max(anchorAllowed, candAllowed);
+
+          Console.WriteLine(
+  $"[MM] bucket={bucketKey} " +
+  $"A(oid={anchor.Player.ObjectID},r={anchor.Rating},wait={(nowUtc - anchor.EnqueueUtc).TotalSeconds:0.0}s,allowA={anchorAllowed}) " +
+  $"B(oid={cand.Player.ObjectID},r={cand.Rating},wait={(nowUtc - cand.EnqueueUtc).TotalSeconds:0.0}s,allowB={candAllowed}) " +
+  $"diff={diff} allow={allowed}"
+);
 
           if (diff <= allowed && diff < bestDiff)
           {

@@ -1,4 +1,7 @@
-﻿using Google.Protobuf.Protocol;
+﻿using GameServer.Game.Heromove;
+using GameServer.Game.Object;
+using GameServer.Utils;
+using Google.Protobuf.Protocol;
 using Server.Data;
 using Server.Game;
 using System;
@@ -12,60 +15,190 @@ using System.Threading.Tasks;
 
 namespace GameServer.Game
 {
+
   public partial class Hero : Creature
   {
+    /// <summary>
+    /// 이동 인풋
+    /// </summary>
+    public Vector3 MoveInputDir { get; set; } = Vector3.Zero; 
+
+    private IHeroSkillHandler skillHandler;
+
     bool staminaDirty = false;
+
+
+    float upperStateRemain = 0f; // 0이면 Enone
+    bool UpperStateLocked; // 상체 
+    float lowerStateRemain = 0f;  // 0이면 Enone
+    bool LowerStateLocked; //하체
+
+
+    public bool IsPersistence;
+
+    public void InitMoveTempleteId(int templateId)
+    {
+      TempleteID = templateId;
+
+      if (templateId == Define.HERO_TEMPLATE_BEAR)
+        skillHandler = new BearHeroSkillHandler();
+      else
+        skillHandler = new HeroSkillHandler();
+    }
+    public bool HandleBasicAttack(Vector3 dir, Vector3 startPos, out HeroBullet spawned)
+    {
+      spawned = null;
+
+      if (skillHandler == null)
+        return false;
+
+      return skillHandler.OnBasicAttack(this, dir, startPos, out spawned);
+    }
+
+    public bool HandleSkillPress(Vector3 dir, Vector3 targetPos, out HeroSkill spawnedSkill)
+    {
+      spawnedSkill = null;
+
+      if (skillHandler == null)
+        return false;
+
+      return skillHandler.OnSkillAttack(this, dir, targetPos, out spawnedSkill);
+    }
+
+    public void HandleSkillRelease()
+    {
+      if (skillHandler == null)
+        return;
+
+      skillHandler.OnSkillRelease(this);
+    }
+
+    public bool IsCC()
+    {
+      return stunRemain > 0f || airbornRemain > 0f || isKnockback;
+    }
+    //상체 수명 잠금//
+    public void LockUpper(EHeroUpperState st)
+    {
+      EHeroUpperState = st;
+      upperStateRemain = 0f;
+      UpperStateLocked = true;
+    }
+    public void UnlockUpper()
+    {
+      UpperStateLocked = false;
+      ClearUpperState();
+    }
+    // 상체 수명 관리 일반적으로 O
+    public void SetUpperState(EHeroUpperState st, float durationSec)
+    {
+      EHeroUpperState = st;
+      upperStateRemain = MathF.Max(0f, durationSec);
+    }
+    public void ClearUpperState()
+    {
+      EHeroUpperState = EHeroUpperState.Enone;
+      upperStateRemain = 0f;
+    }
+
+
+    public void LockLower(EHeroLowerState st)
+    {
+      EHeroLowerState = st;
+      lowerStateRemain = 0f;
+      LowerStateLocked = true;
+    }
+
+    public void UnlockLower()
+    {
+      LowerStateLocked = false;
+      ClearLowerState();
+    }
+
+    public void SetLowerState(EHeroLowerState st, float durationSec)
+    {
+      if (LowerStateLocked) return;
+      EHeroLowerState = st;
+      lowerStateRemain = MathF.Max(0f, durationSec);
+    }
+
+    public void ClearLowerState()
+    {
+      EHeroLowerState = EHeroLowerState.Eindle;
+      lowerStateRemain = 0f;
+    }
+
+
     public override void FixedUpdate(float deltaTime)
     {
       base.FixedUpdate(deltaTime);
 
-      if (IsDead)
+      if (IsDead) 
         return;
-      TickStamina(deltaTime);
-      // 2) 하드 CC(스턴/에어본) 중이면 이동 X
-      if (stunRemain > 0f || airbornRemain > 0f || isKnockback)
-        return;
-      // 3) 입력 방향으로 이동
-      ApplyMove(MoveDir, MoveSpeed, deltaTime);
+
+      // 1) 핸들러 틱 (불곰 불꽃 갱신/스태미너 소모 등)
+      skillHandler?.Tick(this, deltaTime);
+
+      // 2) 상체 상태 수명은 CC여도 감소해야 함 (중요)
+      if (!UpperStateLocked && upperStateRemain > 0f)
+      {
+        upperStateRemain -= deltaTime;
+        if (upperStateRemain <= 0f)
+          ClearUpperState(); // Enone 복귀
+      }
+
+      if (IsCC())
+      {
+        MoveInputDir = Vector3.Zero; 
+        if (!LowerStateLocked)
+          EHeroLowerState = EHeroLowerState.Eindle;
+      }
+      else
+      {
+        Vector3 inputXZ = new Vector3(MoveInputDir.X, 0, MoveInputDir.Z);
+
+        if (inputXZ.LengthSquared() >= 1e-4f)
+        {
+          ApplyMove(MoveInputDir, MoveSpeed, deltaTime);
+
+          if (!LowerStateLocked)
+            EHeroLowerState = EHeroLowerState.Emove;
+
+          if (!UpperStateLocked && EHeroUpperState == EHeroUpperState.Enone)
+            Direction = Vector3.Normalize(inputXZ);
+        }
+        else
+        {
+          if (!LowerStateLocked)
+            EHeroLowerState = EHeroLowerState.Eindle;
+        }
+      }
+
+      // 6) PosInfo.Dir은 송출만 (MoveDir이 단일 진실)
+      if (Direction.LengthSquared() >= 1e-6f)
+      {
+        PositionInfo.DirX = Direction.X;
+        PositionInfo.DirY = 0;
+        PositionInfo.DirZ = Direction.Z;
+      }
     }
 
     public override void ApplyMove(Vector3 dir, float speed, float deltaTime)
     {
-      Vector3 cleanDir = new Vector3(dir.X, 0, dir.Z);
+      Vector3 input = new Vector3(dir.X, 0, dir.Z);
+      if (input.LengthSquared() < 0.001f) return;
 
-      if (cleanDir.LengthSquared() < 0.001f)
-      {
-        return;
-      }
-      Vector3 normalizedDir = Vector3.Normalize(cleanDir);
-      Vector3 delta = normalizedDir * speed * deltaTime;
-      Vector3 newPos = new Vector3(PosInfo.PosX + delta.X, 0, PosInfo.PosZ + delta.Z);
-      //충돌체크
-      var grid = DataManager.ObstacleGrid;
-      if (grid.IsBlockedXZ(newPos))
+      Vector3 nd = Vector3.Normalize(input);
+      Vector3 delta = nd * speed * deltaTime;
+
+      Vector3 cur = Position;
+      Vector3 next = new Vector3(cur.X + delta.X, cur.Y, cur.Z + delta.Z);
+
+      if (DataManager.ObstacleGrid.IsBlockedXZ(next))
         return;
 
-
-      if (EHeroLowerState == EHeroLowerState.Eindle)
-      {
-        PosInfo.DirX = MoveDir.X;
-        PosInfo.DirY = 0;
-        PosInfo.DirZ = MoveDir.Z;
-        PosInfo.PosX = Position.X;
-        PosInfo.PosY = 0;
-        PosInfo.PosZ = Position.Z;
-      }
-      else
-      {
-        PosInfo.DirX = normalizedDir.X;
-        PosInfo.DirY = 0;
-        PosInfo.DirZ = normalizedDir.Z;
-        PosInfo.PosX = newPos.X;
-        PosInfo.PosY = 0;
-        PosInfo.PosZ = newPos.Z;
-      }
+      Position = next;
     }
-
 
     // =========================
     //   Damage / CC 오버라이드
@@ -77,21 +210,9 @@ namespace GameServer.Game
       base.OnDamage(ctx);
     }
 
-    protected override void OnHpChanged()
+    protected override void UpdateHp()
     {
-      base.OnHpChanged();
-      //
-      //if (Room == null)
-      //  return;
-      //
-      //S_HeroChangeHp hpPkt = new S_HeroChangeHp
-      //{
-      //  ObjectId = this.ObjectID,
-      //  CurHp = this.CurHp,
-      //  MaxHp = this.MaxHp
-      //};
-      //
-      //Room.Broadcast(hpPkt);
+      base.UpdateHp();
     }
 
     protected override void OnDead(BaseObject killer)
@@ -114,70 +235,27 @@ namespace GameServer.Game
     // Stun: 일정 시간 동안 행동/이동 불가
     protected override void ApplyStun(float duration)
     {
-      float dur = MathF.Max(0.05f, duration);
-      stunRemain = dur;   // Creature 쪽 protected 필드
-
-      // TODO: 상체/하체 상태 갱신, 스킬 취소 등
-      // ex) EHeroUpperState = EHeroUpperState.Stun; 이런 거 있으면 여기서 바꾸기
-      // TODO: 클라에 "스턴 걸림" 패킷 보내고 싶으면 여기서 Room.Broadcast(...)
+      base.ApplyStun(duration);
+      LockUpper(EHeroUpperState.Edizzy);
+      LockLower(EHeroLowerState.Eindle);
+      MoveInputDir = Vector3.Zero;
     }
 
     // Airborn: 서버에선 "행동 불가 + 타이머" 정도만 들고가도 됨
     protected override void ApplyAirborn(float height, float hang)
     {
-      float rawH = height > 0f ? height : 1.5f;
-      float rawHang = hang > 0f ? hang : 1.0f;
-
-      // 에어본 저항 적용 (필요 없으면 이 부분 삭제해도 됨)
-      float remain = Math.Clamp(1f - AirborneResist, 0f, 1f);
-      float effH = rawH * remain;
-      float effHang = rawHang * remain;
-
-      if (effH <= 0.01f || effHang <= 0.01f)
-        return;
-
-      airbornRemain = effHang;
-
-      // TODO: 상체 상태를 "에어본" 같은 걸로 바꾸고,
-      // 실제 y 이동/애니메이션은 클라에서 처리
-      // ex) EHeroUpperState = EHeroUpperState.Airborn;
+      base.ApplyAirborn(height, hang);
+      LockUpper(EHeroUpperState.Edizzy);
+      LockLower(EHeroLowerState.Eindle);
+      MoveInputDir = Vector3.Zero;
     }
 
     // Knockback: 짧은 시간 동안 Position을 보간 이동
     protected override void ApplyKnockback(in DamageContext ctx)
     {
-      if (ImmuneKnockback)
-        return;
-
-      float rawDist = ctx.Power > 0f ? ctx.Power : 1.0f;
-      float effDist = rawDist * (1f - KnockbackResist);
-      if (effDist <= 0.01f)
-        return;
-
-      // 방향 결정
-      Vector3 dir = ctx.Direction;
-      if (dir.LengthSquared() < 1e-4f && ctx.Attacker != null)
-      {
-        Vector3 v = this.Position - ctx.Attacker.Position;
-        v.Y = 0;
-        if (v.LengthSquared() > 1e-6f)
-          dir = Vector3.Normalize(v);
-      }
-      else if (dir.LengthSquared() > 1e-4f)
-      {
-        dir = Vector3.Normalize(dir);
-      }
-      else
-      {
-        dir = new Vector3(0, 0, 1); // 최후 보정
-      }
-
-      knockStart = Position;
-      knockEnd = Position + dir * effDist;
-      knockTime = 0.12f;
-      knockElapsed = 0f;
-      isKnockback = true;
+      base.ApplyKnockback(ctx);
     }
+
 
     protected override void UpdateCC(float dt)
     {
@@ -188,8 +266,8 @@ namespace GameServer.Game
         if (stunRemain <= 0f)
         {
           stunRemain = 0f;
-          // TODO: 스턴 해제  상태 복구
-          // ex) EHeroUpperState = EHeroUpperState.Normal;
+          UnlockUpper();
+          UnlockLower();
         }
       }
 
@@ -200,7 +278,8 @@ namespace GameServer.Game
         if (airbornRemain <= 0f)
         {
           airbornRemain = 0f;
-          // TODO: 에어본 해제  상태 복구
+          UnlockUpper();
+          UnlockLower();
         }
       }
 
@@ -221,7 +300,7 @@ namespace GameServer.Game
       }
     }
 
-    private void TickStamina(float deltaTime)
+    public void TickStamina(float deltaTime)
     {
       if (CurStamina >= MaxStamina)
         return;
@@ -239,6 +318,38 @@ namespace GameServer.Game
       staminaDirty = true;
       return true;
     }
+
+    float _staminaSendAcc = 0f;
+    int _lastSentStaminaInt = -1;
+
+
+    public bool TryConsumeStaminaDirtyForSend(float dt, float intervalSec, out int cur, out int max)
+    {
+      cur = 0;
+      max = 0;
+
+      _staminaSendAcc += dt;
+
+      if (!staminaDirty) return false;
+      if (_staminaSendAcc < intervalSec) return false;
+
+      int curInt = (int)CurStamina * 1000;
+      int maxInt = (int)MaxStamina * 1000;
+
+      // 같은 값이면 굳이 보낼 필요 없음
+      if (curInt == _lastSentStaminaInt)
+        return false;
+
+      // 여기서 "보내기로 확정" 처리
+      staminaDirty = false;
+      _staminaSendAcc = 0f;
+      _lastSentStaminaInt = curInt;
+
+      cur = curInt;
+      max = maxInt;
+      return true;
+    }
+
     private void BroadcastHeroStateAndPos()
     {
       if (Room == null)
@@ -258,12 +369,12 @@ namespace GameServer.Game
           LowerState = this.EHeroLowerState,
           PosInfo = new PositionInfo
           {
-            PosX = this.PosInfo.PosX,
-            PosY = this.PosInfo.PosY,
-            PosZ = this.PosInfo.PosZ,
-            DirX = this.PosInfo.DirX,
-            DirY = this.PosInfo.DirY,
-            DirZ = this.PosInfo.DirZ
+            PosX = this.PositionInfo.PosX,
+            PosY = this.PositionInfo.PosY,
+            PosZ = this.PositionInfo.PosZ,
+            DirX = this.PositionInfo.DirX,
+            DirY = this.PositionInfo.DirY,
+            DirZ = this.PositionInfo.DirZ
           }
         }
       };

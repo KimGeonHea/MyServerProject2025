@@ -12,7 +12,7 @@ namespace GameServer.Game.Room
 {
   public partial class LobbyRoom : Room
   {
-    const int PITY_THRESHOLD = 100; // 필요시 조정
+    const int PITY_THRESHOLD = 30; // 필요시 조정
 
     public void HandleUseItem(Player player, C_UseItem req)
     {

@@ -40,13 +40,13 @@ namespace GameServer.Game.Room
       // RED 타워
       RedTower = new Tower();
       RedTower.Position = new Vector3(-4f, 0f, 26); 
-      RedTower.Init(ETeamType.Red, 5000,redHero );
+      RedTower.Init(redHero.TeamType ,5000,redHero );
       EnterGame(RedTower);
 
       // BLUE 타워
       BlueTower = new Tower();
       BlueTower.Position = new Vector3(-4f, 0f, -1); 
-      BlueTower.Init(ETeamType.Blue, 5000, blueHero);
+      BlueTower.Init(blueHero.TeamType, 5000, blueHero);
       EnterGame(BlueTower);
     }
 

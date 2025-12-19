@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace GameServer.Game
 {
-  public class BearSkill
+  public class BearSkill : HeroSkill
   {
 
   }
